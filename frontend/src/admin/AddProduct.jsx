@@ -112,7 +112,7 @@ const AddProduct = () => {
       productData.append("images", image);
     });
 
-    console.log("Submitting product with data:", formData, images);
+    console.log("Submitting product with data:", formData, images); 
 
     try {
       setLoading(true);

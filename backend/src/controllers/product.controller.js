@@ -7,9 +7,7 @@ import ApiFeatures from "../utils/apiFeatures.js";
 
 export const createProduct = async (req, res) => {
   try {
-    const { name, price, description, category, images: imageLinks } = req.body;
-
-    let finalImages = [];
+    const { name, price, description, category, stock } = req.body;
 
     if (!name || !price || !description || !category) {
       return res.status(400).json({
@@ -18,48 +16,42 @@ export const createProduct = async (req, res) => {
       });
     }
 
-    // If files uploaded → multer
-    if (req.files && req.files.length > 0) {
-      req.files.forEach((file) => {
-        finalImages.push({
-          public_id: file.filename,
-          url: `http://localhost:4000/${file.path}`, // ← this works only if you serve /uploads
-        });
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Please upload at least one image",
       });
     }
 
-    // If links are provided → JSON array or single link
-    if (imageLinks) {
-      let parsedLinks = [];
+    const images = req.files.map((file) => ({
+      public_id: file.filename,
+      url: `http://localhost:4000/uploads/${file.filename}`,
+    }));
 
-      if (typeof imageLinks === "string") {
-        parsedLinks = JSON.parse(imageLinks);
-      } else {
-        parsedLinks = imageLinks;
-      }
+    // YE SABSE IMPORTANT LINE HAI
+    const product = await Product.create({
+      name,
+      price: Number(price),
+      description,
+      category,
+      stock: Number(stock) || 1,
+      images,
+      user: req.user._id, // ← YEH DAAL DE
+      seller: req.user._id, // ← agar model me seller bhi hai to yeh bhi daal de
+    });
 
-      parsedLinks.forEach((img) => {
-        finalImages.push({
-          public_id: "url_image",
-          url: img.url,
-        });
-      });
-    }
-
-    console.log("Product created successfully");
-    if (finalImages.length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Please upload at least one image" });
-    }
-
-    return res.json({
+    return res.status(201).json({
       success: true,
       message: "Product created successfully",
-      images: finalImages,
+      product,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("Create Product Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
   }
 };
 // get all products
