@@ -2,7 +2,7 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import fileUpload from "express-fileupload";
+// import fileUpload from "express-fileupload";   ← DELETE THIS LINE
 import bodyParser from "body-parser";
 
 import product from "./src/routes/product.routes.js";
@@ -13,23 +13,22 @@ import errorMiddlewares from "./src/middlewares/error.middlewares.js";
 const app = express();
 
 // Middlewares
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(express.json({ limit: "50mb" })); // increase limit
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(
-  fileUpload({
-    useTempFiles: true,
-    tempFileDir: "/tmp/",
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-  })
-);
+// Remove these lines completely:
+// app.use(fileUpload({ ... }));
+// app.use(bodyParser.urlencoded({ extended: true })); // duplicate
+
 app.use(
   cors({
-    origin: "http://localhost:5173", // Change to your frontend URL
+    origin: "http://localhost:5173",
     credentials: true,
   })
 );
+
+// Serve uploaded files (for local multer disk storage)
+app.use("/uploads", express.static("uploads"));
 
 // Routes
 app.use("/api/v1", product);
@@ -39,7 +38,6 @@ app.use("/api/v1", orderRouter);
 // Error Middleware
 app.use(errorMiddlewares);
 
-// Health check
 app.get("/", (req, res) => {
   res.send("<h1>Bagify API is running!</h1>");
 });

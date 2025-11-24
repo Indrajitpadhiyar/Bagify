@@ -6,35 +6,37 @@ import {
   ADD_PRODUCT_RESET,
 } from "../constans/addProduct.Constans";
 
-// Get token from state or localStorage
-const token = localStorage.getItem("token"); // or get from userLogin state
-
-export const addProduct = (productData) => async (dispatch, getState) => {
+export const addProduct = (formData, token) => async (dispatch) => {
   try {
     dispatch({ type: ADD_PRODUCT_REQUEST });
 
     const config = {
       headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${token}`,
+        "content-type": "multipart/form-data",
+        Authorization: `${token}`,
       },
     };
+    console.log("Config headers:", config.headers);
 
-    const { data } = await axios.post("/api/products/new", productData, config);
+    const { data } = await axios.post(
+      "/api/v1/products/create",
+      formData,
+      config
+    );
+    console.log("Product added successfully:", data);
 
-    dispatch({ type: ADD_PRODUCT_SUCCESS, payload: data });
-
-    // Optional: Reset after success
-    setTimeout(() => {
-      dispatch({ type: ADD_PRODUCT_RESET });
-    }, 3000);
+    dispatch({
+      type: ADD_PRODUCT_SUCCESS,
+      payload: data,
+    });
   } catch (error) {
     dispatch({
       type: ADD_PRODUCT_FAIL,
-      payload:
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message,
+      payload: error.response.data.message,
     });
   }
+};
+
+export const addProductReset = () => (dispatch) => {
+  dispatch({ type: ADD_PRODUCT_RESET });
 };

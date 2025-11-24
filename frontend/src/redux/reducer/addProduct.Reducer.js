@@ -8,21 +8,26 @@ import {
 const initialState = {
   loading: false,
   success: false,
-  addProduct: null,
+  product: null,
   error: null,
 };
 
 export const createAddProductReducer = (state = initialState, action) => {
   switch (action.type) {
     case ADD_PRODUCT_REQUEST:
-      return { ...state, loading: true };
+      return {
+        ...state,
+        loading: true,
+        success: false,
+        error: null,
+      };
 
     case ADD_PRODUCT_SUCCESS:
       return {
         ...state,
         loading: false,
         success: true,
-        addProduct: action.payload,
+        product: action.payload,
         error: null,
       };
 
@@ -30,11 +35,15 @@ export const createAddProductReducer = (state = initialState, action) => {
       return {
         ...state,
         loading: false,
+        success: false,
+        product: null,
         error: action.payload,
       };
 
     case ADD_PRODUCT_RESET:
-      return initialState;
+      return {
+        ...initialState,
+      };
 
     default:
       return state;

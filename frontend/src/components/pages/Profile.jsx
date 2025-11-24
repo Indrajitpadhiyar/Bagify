@@ -11,9 +11,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { logout, clearErrors } from "../../redux/actions/user.Action";
-import { addProduct } from "../../redux/actions/addProduct.Action";
-import { ADD_PRODUCT_RESET } from "../../redux/constans/addProduct.Constans";
 import ProfileSettings from "../layouts/ProfileSettings";
+import AddProduct from "../../admin/AddProduct";
 import toast from "react-hot-toast";
 
 const Profile = () => {
@@ -44,286 +43,6 @@ const Profile = () => {
         dispatch(logout());
         toast.success("Logged out successfully!");
         navigate("/");
-    };
-
-    // Add Product Section Component
-    const AddProductSection = () => {
-        const [name, setName] = useState("");
-        const [price, setPrice] = useState("");
-        const [description, setDescription] = useState("");
-        const [category, setCategory] = useState("");
-        const [stock, setStock] = useState("");
-        const [images, setImages] = useState([]);
-        const [imagesPreview, setImagesPreview] = useState([]);
-
-        const { loading, success, error: addProductError } = useSelector((state) => state.addProduct);
-
-        // Reset form on success
-        useEffect(() => {
-            if (success) {
-                toast.success("Product added successfully!");
-                setTimeout(() => {
-                    dispatch({ type: ADD_PRODUCT_RESET });
-                    // Reset form
-                    setName("");
-                    setPrice("");
-                    setDescription("");
-                    setCategory("");
-                    setStock("");
-                    setImages([]);
-                    setImagesPreview([]);
-                }, 2000);
-            }
-        }, [success, dispatch]);
-
-        // Show add product error
-        useEffect(() => {
-            if (addProductError) {
-                toast.error(addProductError);
-            }
-        }, [addProductError]);
-
-        const handleImageChange = (e) => {
-            const files = Array.from(e.target.files);
-
-            setImages([]);
-            setImagesPreview([]);
-
-            files.forEach((file) => {
-                const reader = new FileReader();
-
-                reader.onload = () => {
-                    if (reader.readyState === 2) {
-                        setImagesPreview((old) => [...old, reader.result]);
-                        setImages((old) => [...old, file]);
-                    }
-                };
-
-                reader.readAsDataURL(file);
-            });
-        };
-
-        const submitHandler = (e) => {
-            e.preventDefault();
-
-            // Enhanced validation
-            if (!name.trim()) {
-                toast.error("Product name is required");
-                return;
-            }
-            if (!price || price <= 0) {
-                toast.error("Please enter a valid price");
-                return;
-            }
-            if (!description.trim()) {
-                toast.error("Product description is required");
-                return;
-            }
-            if (!category) {
-                toast.error("Please select a category");
-                return;
-            }
-            if (!stock || stock < 0) {
-                toast.error("Please enter a valid stock quantity");
-                return;
-            }
-            if (images.length === 0) {
-                toast.error("Please upload at least one product image");
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append("name", name.trim());
-            formData.append("price", price);
-            formData.append("description", description.trim());
-            formData.append("category", category);
-            formData.append("stock", stock);
-
-            images.forEach((image) => {
-                formData.append("images", image);
-            });
-
-            dispatch(addProduct(formData));
-        };
-
-        return (
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
-            >
-                <div className="flex justify-between items-center">
-                    <h3 className="text-2xl font-bold text-orange-900">Add New Product</h3>
-                    {success && (
-                        <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
-                            ✓ Product Added!
-                        </span>
-                    )}
-                </div>
-
-                {/* Success Message */}
-                {success && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <div className="flex items-center">
-                            <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                            <span className="text-green-700 font-medium">Product added successfully! Form will reset shortly.</span>
-                        </div>
-                    </div>
-                )}
-
-                <form onSubmit={submitHandler} className="space-y-6">
-                    {/* Name & Price */}
-                    <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-gray-700 font-medium mb-2">Product Name *</label>
-                            <input
-                                type="text"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-200 focus:border-orange-500 outline-none transition"
-                                placeholder="Enter product name"
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-gray-700 font-medium mb-2">Price (₹) *</label>
-                            <input
-                                type="number"
-                                value={price}
-                                onChange={(e) => setPrice(e.target.value)}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-200 focus:border-orange-500 outline-none transition"
-                                placeholder="999"
-                                min="0"
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    {/* Category & Stock */}
-                    <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-gray-700 font-medium mb-2">Category *</label>
-                            <select
-                                value={category}
-                                onChange={(e) => setCategory(e.target.value)}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-200 focus:border-orange-500 outline-none transition"
-                                required
-                            >
-                                <option value="">Choose Category</option>
-                                <option value="Electronics">Electronics</option>
-                                <option value="Fashion">Fashion</option>
-                                <option value="Home & Kitchen">Home & Kitchen</option>
-                                <option value="Beauty">Beauty</option>
-                                <option value="Sports">Sports</option>
-                                <option value="Books">Books</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-gray-700 font-medium mb-2">Stock Quantity *</label>
-                            <input
-                                type="number"
-                                value={stock}
-                                onChange={(e) => setStock(e.target.value)}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-200 focus:border-orange-500 outline-none transition"
-                                placeholder="50"
-                                min="0"
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    {/* Description */}
-                    <div>
-                        <label className="block text-gray-700 font-medium mb-2">Description *</label>
-                        <textarea
-                            rows="4"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-200 focus:border-orange-500 outline-none transition resize-none"
-                            placeholder="Write a detailed description..."
-                            required
-                        ></textarea>
-                    </div>
-
-                    {/* Image Upload */}
-                    <div>
-                        <label className="block text-gray-700 font-medium mb-3">Product Images *</label>
-                        <div className="border-2 border-dashed border-orange-300 rounded-xl p-6 text-center cursor-pointer hover:border-orange-500 transition">
-                            <input
-                                type="file"
-                                multiple
-                                accept="image/*"
-                                onChange={handleImageChange}
-                                className="hidden"
-                                id="image-upload"
-                            />
-                            <label htmlFor="image-upload" className="cursor-pointer">
-                                <svg className="mx-auto h-12 w-12 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                </svg>
-                                <p className="mt-2 text-gray-600 text-sm">Click to upload images (multiple allowed)</p>
-                                <p className="text-xs text-gray-500 mt-1">PNG, JPG, JPEG up to 5MB</p>
-                            </label>
-                        </div>
-
-                        {/* Image Preview */}
-                        {imagesPreview.length > 0 && (
-                            <div className="mt-4">
-                                <p className="text-sm text-gray-600 mb-2">{imagesPreview.length} image(s) selected</p>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                                    {imagesPreview.map((img, i) => (
-                                        <div key={i} className="relative group">
-                                            <img
-                                                src={img}
-                                                alt="Preview"
-                                                className="h-24 w-full object-cover rounded-lg shadow border border-orange-200"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setImagesPreview(imagesPreview.filter((_, index) => index !== i));
-                                                    setImages(images.filter((_, index) => index !== i));
-                                                }}
-                                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
-                                            >
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Submit Button */}
-                    <div className="text-center pt-4">
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 text-white font-bold py-3 px-8 rounded-full transition transform hover:scale-105 shadow-lg disabled:cursor-not-allowed disabled:opacity-70"
-                        >
-                            {loading ? (
-                                <span className="flex items-center justify-center">
-                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Adding Product...
-                                </span>
-                            ) : (
-                                "Add Product"
-                            )}
-                        </button>
-                    </div>
-                </form>
-            </motion.div>
-        );
     };
 
     // NAVIGATION ITEMS — "Add Product" only for Admin
@@ -388,10 +107,10 @@ const Profile = () => {
                         <p className="font-bold text-orange-900">{order.total}</p>
                         <span
                             className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${order.status === "Delivered"
-                                    ? "bg-green-100 text-green-700"
-                                    : order.status === "Shipped"
-                                        ? "bg-orange-100 text-orange-700"
-                                        : "bg-yellow-100 text-yellow-700"
+                                ? "bg-green-100 text-green-700"
+                                : order.status === "Shipped"
+                                    ? "bg-orange-100 text-orange-700"
+                                    : "bg-yellow-100 text-yellow-700"
                                 }`}
                         >
                             {order.status}
@@ -509,8 +228,8 @@ const Profile = () => {
                         key={item.id}
                         onClick={() => item.href ? navigate(item.href) : setActiveSection(item.id)}
                         className={`flex flex-col items-center p-3 rounded-xl transition-all ${activeSection === item.id
-                                ? "text-orange-600 bg-orange-100 scale-110"
-                                : "text-orange-500"
+                            ? "text-orange-600 bg-orange-100 scale-110"
+                            : "text-orange-500"
                             }`}
                     >
                         {item.icon}
@@ -545,10 +264,16 @@ const Profile = () => {
 
                 {/* Main Content */}
                 <main className="flex-1 overflow-y-auto p-6 pb-24 lg:pb-8">
-                    <div className="max-w-5xl mx-auto">
+                    <div className="max-w-6xl mx-auto">
                         <AnimatePresence mode="wait">
                             {activeSection === "profile" && (
-                                <motion.div key="profile" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                                <motion.div
+                                    key="profile"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    transition={{ duration: 0.3 }}
+                                >
                                     <div className="bg-white rounded-2xl shadow-xl border border-orange-200 p-8">
                                         <ProfileSettings />
                                     </div>
@@ -556,7 +281,13 @@ const Profile = () => {
                             )}
 
                             {activeSection === "orders" && (
-                                <motion.div key="orders" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                                <motion.div
+                                    key="orders"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    transition={{ duration: 0.3 }}
+                                >
                                     <div className="bg-white rounded-2xl shadow-xl border border-orange-200 p-8">
                                         <OrdersSection />
                                     </div>
@@ -564,15 +295,25 @@ const Profile = () => {
                             )}
 
                             {activeSection === "add-product" && isAdmin && (
-                                <motion.div key="add-product" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                                    <div className="bg-white rounded-2xl shadow-xl border border-orange-200 p-8">
-                                        <AddProductSection />
-                                    </div>
+                                <motion.div
+                                    key="add-product"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <AddProduct />
                                 </motion.div>
                             )}
 
                             {activeSection === "admin" && isAdmin && (
-                                <motion.div key="admin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                                <motion.div
+                                    key="admin"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    transition={{ duration: 0.3 }}
+                                >
                                     <div className="bg-white rounded-2xl shadow-xl border border-orange-200 p-8">
                                         <AdminDashboard />
                                     </div>
@@ -604,8 +345,8 @@ const NavItem = ({ icon, label, active, onClick }) => (
         whileTap={{ scale: 0.98 }}
         onClick={onClick}
         className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl text-left font-medium transition-all ${active
-                ? "bg-gradient-to-r from-orange-100 to-orange-50 text-orange-700 border-2 border-orange-300 shadow-md"
-                : "text-orange-700 hover:bg-orange-50"
+            ? "bg-gradient-to-r from-orange-100 to-orange-50 text-orange-700 border-2 border-orange-300 shadow-md"
+            : "text-orange-700 hover:bg-orange-50"
             }`}
     >
         {icon}

@@ -4,8 +4,22 @@ import ErrorHandler from "../utils/error.handler.js";
 import User from "../models/user.model.js";
 
 export const isAuthenticated = catchAsyncError(async (req, res, next) => {
-  const { token } = req.cookies;
+  let token;
 
+  // 1️⃣ HEADER ME DEKHO
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
+  }
+
+  // 2️⃣ COOKIE ME DEKHO
+  if (!token) {
+    token = req.cookies.token;
+  }
+
+  // 3️⃣ TOKEN STILL NA MILE TO ERROR
   if (!token) {
     return next(new ErrorHandler("Please login to access this resource", 401));
   }
@@ -23,8 +37,6 @@ export const isAuthenticated = catchAsyncError(async (req, res, next) => {
   if (!req.user) {
     return next(new ErrorHandler("User not found", 404));
   }
-
-  console.log("Authenticated user:", req.user);
 
   next();
 });

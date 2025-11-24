@@ -13,14 +13,20 @@ import {
   isAuthenticated,
   authorizeRoles,
 } from "../middlewares/auth.middlewares.js";
+import { upload } from "../middlewares/multer.middlewares.js";
 
 const productRouter = express.Router();
 
 productRouter.route("/products").get(getAllProducts);
 
 productRouter
-  .route("/products/new")
-  .post(isAuthenticated, authorizeRoles("admin"), createProduct);
+  .route("/products/create")
+  .post(
+    isAuthenticated,
+    authorizeRoles("admin"),
+    upload.array("images"),
+    createProduct
+  );
 
 productRouter
   .route("/products/:id")

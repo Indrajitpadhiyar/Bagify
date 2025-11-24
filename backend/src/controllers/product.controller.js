@@ -5,16 +5,63 @@ import ApiFeatures from "../utils/apiFeatures.js";
 
 //create product-admin
 
-export const createProduct = catchAsyncError(async (req, res, next) => {
-  req.body.user = req.user.id;
-  const newProduct = await Product.create(req.body);
-  res.status(201).json({
-    success: true,
-    newProduct,
-  });
-  console.log("Product created successfully");
-});
+export const createProduct = async (req, res) => {
+  try {
+    const { name, price, description, category, images: imageLinks } = req.body;
 
+    let finalImages = [];
+
+    if (!name || !price || !description || !category) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide all required fields",
+      });
+    }
+
+    // If files uploaded → multer
+    if (req.files && req.files.length > 0) {
+      req.files.forEach((file) => {
+        finalImages.push({
+          public_id: file.filename,
+          url: `http://localhost:4000/${file.path}`, // ← this works only if you serve /uploads
+        });
+      });
+    }
+
+    // If links are provided → JSON array or single link
+    if (imageLinks) {
+      let parsedLinks = [];
+
+      if (typeof imageLinks === "string") {
+        parsedLinks = JSON.parse(imageLinks);
+      } else {
+        parsedLinks = imageLinks;
+      }
+
+      parsedLinks.forEach((img) => {
+        finalImages.push({
+          public_id: "url_image",
+          url: img.url,
+        });
+      });
+    }
+
+    console.log("Product created successfully");
+    if (finalImages.length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Please upload at least one image" });
+    }
+
+    return res.json({
+      success: true,
+      message: "Product created successfully",
+      images: finalImages,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 // get all products
 export const getAllProducts = catchAsyncError(async (req, res) => {
   // const resultsPerPage = 8;
