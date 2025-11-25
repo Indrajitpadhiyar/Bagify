@@ -12,7 +12,7 @@ import Cart from './components/pages/Cart';
 import Wishlist from './components/pages/Wishlist';
 import HotDeals from './components/pages/HotDeals';
 import MyOrder from './components/pages/MyOrder';
-import './app.css';
+import './App.css';
 
 const App = () => {
   const dispatch = useDispatch();
