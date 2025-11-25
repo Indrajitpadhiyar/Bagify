@@ -9,11 +9,12 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/api": {
-        target: "http://localhost:4000",
+        target: "http://localhost:4000" || "https://bagifybackend.onrender.com",
         changeOrigin: true,
         secure: false,
       },
-      "/uploads": "http://localhost:4000",
+      "/uploads":
+        "http://localhost:4000" || "https://bagifybackend.onrender.com",
     },
   },
 });
