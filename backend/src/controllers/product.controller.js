@@ -25,7 +25,7 @@ export const createProduct = async (req, res) => {
 
     const images = req.files.map((file) => ({
       public_id: file.filename,
-      url: `http://localhost:4000/uploads/${file.filename}`,
+      url: `https://bagifybackend-g2ty.onrender.com/uploads/${file.filename}`,
     }));
 
     // YE SABSE IMPORTANT LINE HAI
