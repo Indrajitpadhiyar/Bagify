@@ -1,4 +1,4 @@
-import axios from "axios";
+import API from "../../api/axiosClient";
 import {
   CREATE_ORDER_REQUEST,
   CREATE_ORDER_SUCCESS,
@@ -11,20 +11,11 @@ import {
   CANCEL_ORDER_FAIL,
 } from "../constans/order.Constants";
 
-const API = axios.create({
-  baseURL: [
-    "http://localhost:4000",
-    "https://bagifybackend-6sn1.onrender.com",
-  ].includes(window.location.origin)
-    ? window.location.origin
-    : "https://bagifybackend-6sn1.onrender.com",
-  withCredentials: true,
-});
 
 export const createOrder = (order) => async (dispatch) => {
   try {
     dispatch({ type: CREATE_ORDER_REQUEST });
-    const { data } = await API.post("/api/v1/order/new", order);
+    const { data } = await API.post("/order/new", order);
     dispatch({ type: CREATE_ORDER_SUCCESS, payload: data.order });
   } catch (error) {
     dispatch({
@@ -37,7 +28,7 @@ export const createOrder = (order) => async (dispatch) => {
 export const getMyOrders = () => async (dispatch) => {
   try {
     dispatch({ type: GET_MY_ORDERS_REQUEST });
-    const { data } = await API.get("/api/v1/orders/me");
+    const { data } = await API.get("/orders/me");
     dispatch({ type: GET_MY_ORDERS_SUCCESS, payload: data.orders });
   } catch (error) {
     dispatch({
@@ -50,7 +41,7 @@ export const getMyOrders = () => async (dispatch) => {
 export const cancelOrder = (orderId) => async (dispatch) => {
   try {
     dispatch({ type: CANCEL_ORDER_REQUEST });
-    await API.delete(`/api/v1/order/cancel/${orderId}`);
+    await API.delete(`/order/cancel/${orderId}`);
     dispatch({ type: CANCEL_ORDER_SUCCESS, payload: orderId });
   } catch (error) {
     dispatch({

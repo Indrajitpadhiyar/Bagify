@@ -1,4 +1,4 @@
-import axios from "axios";
+import API from "../../api/axiosClient";
 import {
   USER_LOGIN_REQUEST,
   USER_LOGIN_SUCCESS,
@@ -28,7 +28,7 @@ export const loadUser = () => async (dispatch) => {
   try {
     dispatch({ type: USER_LOAD_REQUEST });
 
-    const { data } = await axios.get("/api/v1/me", {
+    const { data } = await API.get("/me", {
       headers: getAuthHeader(),
       withCredentials: true,
     });
@@ -48,8 +48,8 @@ export const login = (email, password) => async (dispatch) => {
   try {
     dispatch({ type: USER_LOGIN_REQUEST });
 
-    const { data } = await axios.post(
-      "/api/v1/login",
+    const { data } = await API.post(
+      "/login",
       { email, password },
       { headers: { "Content-Type": "application/json" }, withCredentials: true }
     );
@@ -69,7 +69,7 @@ export const register = (userData) => async (dispatch) => {
   try {
     dispatch({ type: USER_REGISTER_REQUEST });
 
-    const { data } = await axios.post("/api/v1/register", userData, {
+    const { data } = await API.post("/register", userData, {
       headers: { "Content-Type": "multipart/form-data" },
       withCredentials: true,
     });
@@ -110,7 +110,7 @@ export const updateUser = (userData) => async (dispatch) => {
 export const logout = () => async (dispatch) => {
   try {
     localStorage.removeItem("token");
-    await axios.get("/api/v1/logout", { withCredentials: true });
+    await API.get("/logout", { withCredentials: true });
     dispatch({ type: USER_LOGOUT_SUCCESS });
   } catch (error) {
     dispatch({

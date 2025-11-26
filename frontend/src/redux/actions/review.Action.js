@@ -1,4 +1,4 @@
-import axios from "axios";
+import API from "../../api/axiosClient";
 import toast from "react-hot-toast";
 
 export const createReview = (reviewData) => async (dispatch) => {
@@ -24,7 +24,7 @@ export const createReview = (reviewData) => async (dispatch) => {
     };
 
     console.log("Sending review with token:", token);
-    await axios.put("/api/v1/review", reviewData, config);
+    await API.put("/review", reviewData, config);
 
     dispatch({ type: "NEW_REVIEW_SUCCESS" });
     toast.success("Review submitted successfully!");
@@ -42,12 +42,12 @@ export const createReview = (reviewData) => async (dispatch) => {
 export const deleteReview = (reviewId, productId) => async (dispatch) => {
   try {
     dispatch({ type: "DELETE_REVIEW_REQUEST" });
-    await api.delete(`/api/v1/review?id=${reviewId}&productId=${productId}`);
+    await API.delete(`/review?id=${reviewId}&productId=${productId}`);
     dispatch({ type: "DELETE_REVIEW_SUCCESS" });
   } catch (error) {
     dispatch({
       type: "DELETE_REVIEW_FAIL",
-      payload: error.response.data.message,
+      payload: error.response?.data?.message || "Failed to delete review",
     });
   }
 };

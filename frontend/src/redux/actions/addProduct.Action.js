@@ -1,4 +1,4 @@
-import axios from "axios";
+import API from "../../api/axiosClient";
 import {
   ADD_PRODUCT_REQUEST,
   ADD_PRODUCT_SUCCESS,
@@ -18,8 +18,8 @@ export const addProduct = (formData, token) => async (dispatch) => {
     };
     console.log("Config headers:", config.headers);
 
-    const { data } = await axios.post(
-      "/api/v1/products/create",
+    const { data } = await API.post(
+      "/products/create",
       formData,
       config
     );

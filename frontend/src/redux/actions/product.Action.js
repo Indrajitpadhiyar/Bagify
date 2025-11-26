@@ -1,4 +1,5 @@
 import axios from "axios";
+import API from "../../api/axiosClient";
 import {
   ALL_PRODUCT_REQUEST,
   ALL_PRODUCT_SUCCESS,
@@ -9,40 +10,39 @@ import {
   CLEAR_ERRORS,
 } from "../constans/product.Constans";
 
-export const getProduct =() =>
-  async (dispatch) => {
-    try {
-      dispatch({ type: ALL_PRODUCT_REQUEST });
+export const getProduct = () => async (dispatch) => {
+  try {
+    dispatch({ type: ALL_PRODUCT_REQUEST });
 
-      let link = `/api/v1/products`;
+    let link = `/api/v1/products`;
 
-      const { data } = await axios.get(link);
+    const { data } = await axios.get(link);
 
-      dispatch({
-        type: ALL_PRODUCT_SUCCESS,
-        payload: data,
-      });
-    } catch (error) {
-      console.group("API Error: getProduct()");
-      console.error("Message:", error.message);
-      console.error("Response:", error.response?.data);
-      console.groupEnd();
+    dispatch({
+      type: ALL_PRODUCT_SUCCESS,
+      payload: data,
+    });
+  } catch (error) {
+    console.group("API Error: getProduct()");
+    console.error("Message:", error.message);
+    console.error("Response:", error.response?.data);
+    console.groupEnd();
 
-      dispatch({
-        type: ALL_PRODUCT_FAIL,
-        payload:
-          error.response?.data?.message ||
-          "Something went wrong while fetching products.",
-      });
-    }
-  };
+    dispatch({
+      type: ALL_PRODUCT_FAIL,
+      payload:
+        error.response?.data?.message ||
+        "Something went wrong while fetching products.",
+    });
+  }
+};
 
 //
 export const getProductDetails = (id) => async (dispatch) => {
   try {
     dispatch({ type: PRODUCT_DETAILS_REQUEST });
 
-    const { data } = await axios.get(`/api/v1/product/${id}`);
+    const { data } = await API.get(`/product/${id}`);
 
     dispatch({
       type: PRODUCT_DETAILS_SUCCESS,
@@ -57,7 +57,6 @@ export const getProductDetails = (id) => async (dispatch) => {
     });
   }
 };
-
 
 export const clearErrors = () => (dispatch) => {
   dispatch({ type: CLEAR_ERRORS });
