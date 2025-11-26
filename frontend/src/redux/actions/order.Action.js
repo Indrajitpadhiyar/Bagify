@@ -14,10 +14,10 @@ import {
 const API = axios.create({
   baseURL: [
     "http://localhost:4000",
-    "https://bagify-48n8.onrender.com",
+    "https://bagifybackend-6sn1.onrender.com",
   ].includes(window.location.origin)
     ? window.location.origin
-    : "https://bagifybackend-g2ty.onrender.com",
+    : "https://bagifybackend-6sn1.onrender.com",
   withCredentials: true,
 });
 
