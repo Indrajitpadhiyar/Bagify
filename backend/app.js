@@ -22,7 +22,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://bagify-48n8.onrender.com"],
+    origin: ["http://localhost:5173", "https://bagify-u5ll.onrender.com"],
     credentials: true,
   })
 );
