@@ -12,7 +12,12 @@ import {
 } from "../constans/order.Constants";
 
 const API = axios.create({
-  baseURL: "http://localhost:4000",
+  baseURL: [
+    "http://localhost:4000",
+    "https://bagify-48n8.onrender.com",
+  ].includes(window.location.origin)
+    ? window.location.origin
+    : "https://bagifybackend-g2ty.onrender.com",
   withCredentials: true,
 });
 
