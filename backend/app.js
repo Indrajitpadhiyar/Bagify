@@ -24,7 +24,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://bagify-z9wj.onrender.com", // ← your frontend domain
+      "https://bagify-z9wj.onrender.com", 
     ],
     credentials: true,
   })
