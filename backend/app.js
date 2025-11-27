@@ -22,11 +22,13 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://bagify-u5ll.onrender.com"],
+    origin: [
+      "http://localhost:5173",
+      "https://bagify-z9wj.onrender.com", // ← your frontend domain
+    ],
     credentials: true,
   })
 );
-
 // Serve uploaded files (for local multer disk storage)
 app.use("/uploads", express.static("uploads"));
 
