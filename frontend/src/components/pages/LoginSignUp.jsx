@@ -180,11 +180,11 @@ const LoginSignUp = () => {
             </AnimatePresence>
 
             <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 flex items-center justify-center p-4 overflow-hidden">
-                <div className="w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-0 rounded-3xl shadow-2xl overflow-hidden bg-white h-full max-h-screen">
+                <div className="w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-0 rounded-3xl shadow-2xl overflow-hidden bg-white h-[90vh] md:h-full">
 
-                    {/* LEFT: Brand */}
+                    {/* LEFT: Brand - Hidden on mobile when in signup form */}
                     <motion.div
-                        className="relative bg-gradient-to-br from-orange-500 to-orange-600 p-6 md:p-10 flex flex-col justify-center items-center text-white"
+                        className={`relative bg-gradient-to-br from-orange-500 to-orange-600 p-6 md:p-10 flex flex-col justify-center items-center text-white ${isExpanded ? 'hidden md:flex' : 'flex'}`}
                         initial={{ x: -100, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         onMouseEnter={() => setIsHovered(true)}
@@ -256,8 +256,19 @@ const LoginSignUp = () => {
                     </motion.div>
 
                     {/* RIGHT: Forms */}
-                    <div className="p-5 md:p-8 flex flex-col justify-center bg-white max-h-screen overflow-y-auto">
-                        <motion.div className="max-w-md mx-auto w-full">
+                    <div className="p-5 md:p-8 flex flex-col bg-white h-full overflow-y-auto">
+                        <motion.div className="max-w-md mx-auto w-full flex flex-col">
+                            {/* Back button for mobile when in signup form */}
+                            {isExpanded && (
+                                <button
+                                    onClick={() => handleToggleForm(false)}
+                                    className="md:hidden flex items-center gap-2 text-orange-600 mb-4 self-start"
+                                >
+                                    <ChevronUp className="w-4 h-4" />
+                                    Back to Login
+                                </button>
+                            )}
+
                             <div className="text-center mb-6">
                                 <motion.h2
                                     key={isExpanded ? "signup" : "login"}
@@ -281,7 +292,7 @@ const LoginSignUp = () => {
                                         animate={{ opacity: 1, height: "auto" }}
                                         exit={{ opacity: 0, height: 0 }}
                                         onSubmit={handleLogin}
-                                        className="space-y-4"
+                                        className="space-y-4 flex-1"
                                     >
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -369,173 +380,177 @@ const LoginSignUp = () => {
                                         animate={{ opacity: 1, height: "auto" }}
                                         exit={{ opacity: 0, height: 0 }}
                                         onSubmit={handleSignup}
-                                        className="space-y-4"
+                                        className="space-y-4 flex-1 flex flex-col"
                                     >
-                                        {/* Profile Picture */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Profile Picture <span className="text-gray-400 text-xs">(Optional)</span>
-                                            </label>
-                                            <div className="flex items-center gap-3">
-                                                <div className="relative">
-                                                    <div className="w-16 h-16 bg-gray-100 border-2 border-dashed rounded-full flex items-center justify-center overflow-hidden">
-                                                        {imagePreview ? (
-                                                            <img src={imagePreview} alt="Avatar" className="w-full h-full object-cover" />
-                                                        ) : (
-                                                            <User className="w-7 h-7 text-gray-400" />
+                                        <div className="flex-1 space-y-4 overflow-y-auto pb-4">
+                                            {/* Profile Picture */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                    Profile Picture <span className="text-gray-400 text-xs">(Optional)</span>
+                                                </label>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="relative">
+                                                        <div className="w-16 h-16 bg-gray-100 border-2 border-dashed rounded-full flex items-center justify-center overflow-hidden">
+                                                            {imagePreview ? (
+                                                                <img src={imagePreview} alt="Avatar" className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <User className="w-7 h-7 text-gray-400" />
+                                                            )}
+                                                        </div>
+                                                        {imagePreview && (
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    setImagePreview(null);
+                                                                    setAvatarFile(null);
+                                                                }}
+                                                                className="absolute -top-1 -right-1 bg-red-500 text-white p-1 rounded-full"
+                                                            >
+                                                                <X className="w-3 h-3" />
+                                                            </button>
                                                         )}
                                                     </div>
-                                                    {imagePreview && (
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                setImagePreview(null);
-                                                                setAvatarFile(null);
-                                                            }}
-                                                            className="absolute -top-1 -right-1 bg-red-500 text-white p-1 rounded-full"
+                                                    <div className="flex-1">
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            onChange={(e) => handleImageChange(e.target.files[0])}
+                                                            className="hidden"
+                                                            id="avatar-upload"
+                                                            disabled={loading}
+                                                        />
+                                                        <label
+                                                            htmlFor="avatar-upload"
+                                                            className={`block text-sm font-medium text-orange-600 cursor-pointer hover:text-orange-700 transition ${loading ? "opacity-50 cursor-not-allowed" : ""
+                                                                }`}
                                                         >
-                                                            <X className="w-3 h-3" />
-                                                        </button>
-                                                    )}
+                                                            {imagePreview ? "Change Photo" : "Upload Photo"}
+                                                        </label>
+                                                        <p className="text-xs text-gray-500">JPG, PNG, WebP &lt; 2MB</p>
+                                                    </div>
                                                 </div>
-                                                <div className="flex-1">
+                                                {imageError && <p className="text-red-500 text-xs mt-1">{imageError}</p>}
+                                            </div>
+
+                                            {/* Name */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                                <div className="relative">
+                                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                                     <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={(e) => handleImageChange(e.target.files[0])}
-                                                        className="hidden"
-                                                        id="avatar-upload"
+                                                        type="text"
+                                                        value={signupName}
+                                                        onChange={(e) => setSignupName(e.target.value)}
+                                                        required
                                                         disabled={loading}
+                                                        className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-sm"
+                                                        placeholder="John Doe"
                                                     />
-                                                    <label
-                                                        htmlFor="avatar-upload"
-                                                        className={`block text-sm font-medium text-orange-600 cursor-pointer hover:text-orange-700 transition ${loading ? "opacity-50 cursor-not-allowed" : ""
-                                                            }`}
-                                                    >
-                                                        {imagePreview ? "Change Photo" : "Upload Photo"}
-                                                    </label>
-                                                    <p className="text-xs text-gray-500">JPG, PNG, WebP &lt; 2MB</p>
                                                 </div>
                                             </div>
-                                            {imageError && <p className="text-red-500 text-xs mt-1">{imageError}</p>}
-                                        </div>
 
-                                        {/* Name */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                                            <div className="relative">
-                                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                                <input
-                                                    type="text"
-                                                    value={signupName}
-                                                    onChange={(e) => setSignupName(e.target.value)}
-                                                    required
-                                                    disabled={loading}
-                                                    className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-sm"
-                                                    placeholder="John Doe"
-                                                />
+                                            {/* Email */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                                <div className="relative">
+                                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                                    <input
+                                                        type="email"
+                                                        value={signupEmail}
+                                                        onChange={(e) => setSignupEmail(e.target.value)}
+                                                        required
+                                                        disabled={loading}
+                                                        className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-sm"
+                                                        placeholder="you@example.com"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* Password */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                                                <div className="relative">
+                                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                                    <input
+                                                        type={showPassword ? "text" : "password"}
+                                                        value={signupPassword}
+                                                        onChange={(e) => setSignupPassword(e.target.value)}
+                                                        required
+                                                        disabled={loading}
+                                                        className="w-full pl-9 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-sm"
+                                                        placeholder="••••••••"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowPassword(!showPassword)}
+                                                        disabled={loading}
+                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                    >
+                                                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Confirm Password */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                                                <div className="relative">
+                                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                                    <input
+                                                        type={showConfirmPassword ? "text" : "password"}
+                                                        value={confirmPassword}
+                                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                                        required
+                                                        disabled={loading}
+                                                        className={`w-full pl-9 pr-10 py-2.5 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-sm ${passwordError ? "border-red-500" : "border-gray-300"
+                                                            }`}
+                                                        placeholder="••••••••"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                        disabled={loading}
+                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                    >
+                                                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                    </button>
+                                                </div>
+                                                {passwordError && <p className="text-red-500 text-xs mt-1">{passwordError}</p>}
                                             </div>
                                         </div>
 
-                                        {/* Email */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                            <div className="relative">
-                                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                                <input
-                                                    type="email"
-                                                    value={signupEmail}
-                                                    onChange={(e) => setSignupEmail(e.target.value)}
-                                                    required
-                                                    disabled={loading}
-                                                    className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-sm"
-                                                    placeholder="you@example.com"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {/* Password */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                                            <div className="relative">
-                                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                                <input
-                                                    type={showPassword ? "text" : "password"}
-                                                    value={signupPassword}
-                                                    onChange={(e) => setSignupPassword(e.target.value)}
-                                                    required
-                                                    disabled={loading}
-                                                    className="w-full pl-9 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-sm"
-                                                    placeholder="••••••••"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowPassword(!showPassword)}
-                                                    disabled={loading}
-                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                                >
-                                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {/* Confirm Password */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-                                            <div className="relative">
-                                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                                <input
-                                                    type={showConfirmPassword ? "text" : "password"}
-                                                    value={confirmPassword}
-                                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                                    required
-                                                    disabled={loading}
-                                                    className={`w-full pl-9 pr-10 py-2.5 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-sm ${passwordError ? "border-red-500" : "border-gray-300"
-                                                        }`}
-                                                    placeholder="••••••••"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                                    disabled={loading}
-                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                                >
-                                                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                                </button>
-                                            </div>
-                                            {passwordError && <p className="text-red-500 text-xs mt-1">{passwordError}</p>}
-                                        </div>
-
-                                        {/* Submit */}
-                                        <motion.button
-                                            whileHover={{ scale: loading ? 1 : 1.02 }}
-                                            whileTap={{ scale: loading ? 1 : 0.98 }}
-                                            type="submit"
-                                            disabled={loading}
-                                            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm"
-                                        >
-                                            {loading ? (
-                                                <>
-                                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                                    Creating…
-                                                </>
-                                            ) : (
-                                                "Create Account"
-                                            )}
-                                        </motion.button>
-
-                                        {/* Back to Login */}
-                                        <div className="text-center text-xs text-gray-600">
-                                            Already have an account?{" "}
-                                            <button
-                                                type="button"
-                                                onClick={() => handleToggleForm(false)}
+                                        {/* Submit Button - Always visible at bottom */}
+                                        <div className="pt-4 border-t border-gray-200">
+                                            <motion.button
+                                                whileHover={{ scale: loading ? 1 : 1.02 }}
+                                                whileTap={{ scale: loading ? 1 : 0.98 }}
+                                                type="submit"
                                                 disabled={loading}
-                                                className="text-orange-600 font-medium hover:underline inline-flex items-center gap-1"
+                                                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm"
                                             >
-                                                Login
-                                                <ChevronUp className="w-3 h-3 animate-bounce" />
-                                            </button>
+                                                {loading ? (
+                                                    <>
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                        Creating…
+                                                    </>
+                                                ) : (
+                                                    "Create Account"
+                                                )}
+                                            </motion.button>
+
+                                            {/* Back to Login */}
+                                            <div className="text-center text-xs text-gray-600 mt-3">
+                                                Already have an account?{" "}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleToggleForm(false)}
+                                                    disabled={loading}
+                                                    className="text-orange-600 font-medium hover:underline inline-flex items-center gap-1"
+                                                >
+                                                    Login
+                                                    <ChevronUp className="w-3 h-3 animate-bounce" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </motion.form>
                                 )}
