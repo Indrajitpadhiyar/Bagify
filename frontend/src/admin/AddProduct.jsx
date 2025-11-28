@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { Upload, X } from "lucide-react";
 import Select from "react-select";
+import API from "../api/axiosClient";
 
 const AddProduct = () => {
   const dispatch = useDispatch();
@@ -146,8 +147,8 @@ const AddProduct = () => {
     try {
       setLoading(true);
 
-      const response = await axios.post(
-        "http://localhost:4000/api/v1/products/create",
+      const response = await API.post(
+        "/products/create",
         productData,
         {
           withCredentials: true,
@@ -247,7 +248,7 @@ const AddProduct = () => {
 
             {/* Stock */}
             <div className="grid  gap-">
-              
+
               <input
                 name="stock"
                 type="number"
