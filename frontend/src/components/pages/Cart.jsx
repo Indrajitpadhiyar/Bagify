@@ -1,12 +1,3 @@
-import React from 'react';
-import toast from 'react-hot-toast';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { Trash2, Plus, Minus } from 'lucide-react';
-import { useSelector, useDispatch } from 'react-redux';
-import { removeFromCart, addToCart } from '../../redux/slices/cartSlice';
-import CheckoutButton from '../layouts/CheckoutButton';
-import Navbar from '../ui/Navbar';
 import Footer from '../ui/Footer';
 
 const Cart = () => {

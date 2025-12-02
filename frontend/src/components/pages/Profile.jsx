@@ -8,7 +8,7 @@ import {
     ShoppingBag,
     PackagePlus,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion"; // eslint-disable-line no-unused-vars
 import { useNavigate } from "react-router-dom";
 import { logout, clearErrors } from "../../redux/actions/user.Action";
 import ProfileSettings from "../layouts/ProfileSettings";

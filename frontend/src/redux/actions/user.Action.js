@@ -89,10 +89,9 @@ export const updateUser = (userData) => async (dispatch) => {
   try {
     dispatch({ type: USER_UPDATE_REQUEST });
 
-    const { data } = await axios.put("/api/v1/me/update", userData, {
+    const { data } = await API.put("/me/update", userData, {
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeader(),
       },
       withCredentials: true,
     });

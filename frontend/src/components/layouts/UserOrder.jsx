@@ -1,5 +1,5 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion"; // eslint-disable-line no-unused-vars
 import { MapPin, ChevronDown, ChevronUp, X } from "lucide-react";
 import FancyDeliveryStatus from "../ui/FancyDeliveryStatus";
 

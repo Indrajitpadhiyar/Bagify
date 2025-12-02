@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Truck, Lock, CheckCircle, MapPin, Edit2 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
+import { motion, AnimatePresence } from "framer-motion"; // eslint-disable-line no-unused-vars
+import { Truck, MapPin, Edit2, CheckCircle, X, Lock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { createOrder } from "../../redux/actions/order.Action";
 import { clearCart } from "../../redux/slices/cartSlice";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
 
 // Address Modal
 const AddressModal = ({ isOpen, onClose, onSave, currentAddress }) => {

@@ -1,6 +1,6 @@
 // src/components/ui/SearchDropdown.jsx
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import { Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -38,7 +38,7 @@ const SearchDropdown = ({
             >
                 {results.length === 0 ? (
                     <div className="px-6 py-8 text-center text-gray-500">
-                        No products found for “<strong>{query}</strong>”
+                        No products found for "<strong>{query}</strong>"
                     </div>
                 ) : (
                     <ul className="max-h-96 overflow-y-auto">
@@ -80,7 +80,7 @@ const SearchDropdown = ({
                         )}
                     </ul>
                 )}
-                {/* “View all” footer */}
+                {/* "View all" footer */}
                 {query && results.length > 0 && (
                     <div className="border-t border-gray-100 px-5 py-3 bg-gray-50">
                         <Link
@@ -89,7 +89,7 @@ const SearchDropdown = ({
                             className="flex items-center justify-center gap-2 text-orange-600 font-medium hover:underline"
                         >
                             <Search className="w-4 h-4" />
-                            View all results for “{query}”
+                            View all results for "{query}"
                         </Link>
                     </div>
                 )}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion"; // eslint-disable-line no-unused-vars
 import { ShoppingBag, AlertCircle, CheckCircle, X } from "lucide-react";
 import Navbar from "../ui/Navbar";
 import Footer from "../ui/Footer";
@@ -124,7 +124,7 @@ const MyOrder = () => {
         try {
             await dispatch(cancelOrder(orderId));
             toast.success("Order cancelled successfully!");
-        } catch (err) {
+        } catch {
             toast.error("Failed to cancel order. Please try again.");
         } finally {
             setTimeout(() => setCancellingOrderId(null), 600);

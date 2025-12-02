@@ -1,4 +1,4 @@
-import axios from "axios";
+
 import API from "../../api/axiosClient";
 import {
   ALL_PRODUCT_REQUEST,

@@ -382,7 +382,7 @@ const ReviewSection = () => {
                                     await dispatch(deleteReview(rev._id, id));
                                     toast.success("Review deleted successfully!");
                                     dispatch(getProductDetails(id));
-                                } catch (err) {
+                                } catch {
                                     toast.error("Failed to delete review");
                                 }
                             };

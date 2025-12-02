@@ -1,9 +1,7 @@
-// src/components/admin/AddProduct.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addProductReset } from "../redux/actions/addProduct.Action";
 import toast from "react-hot-toast";
-import axios from "axios";
 import { Upload, X } from "lucide-react";
 import Select from "react-select";
 import API from "../api/axiosClient";

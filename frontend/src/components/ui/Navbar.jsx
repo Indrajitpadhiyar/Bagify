@@ -1,7 +1,8 @@
 // src/components/Navbar.jsx
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import {
     Search,
     Menu,
@@ -282,6 +283,7 @@ const Navbar = () => {
     const { isAuthenticated, user, loading } = useSelector((state) => state.user);
     const { products = [] } = useSelector((state) => state.products || {});
 
+
     const filtered = useMemo(() => {
         if (!searchQuery.trim()) return [];
         const q = searchQuery.toLowerCase();
@@ -300,7 +302,7 @@ const Navbar = () => {
     }, [searchQuery, products]);
 
     useEffect(() => {
-        const unlisten = navigate((loc) => {
+        const unlisten = navigate(() => {
             setShowDropdown(false);
             setSearchQuery("");
         });
@@ -508,21 +510,21 @@ const Navbar = () => {
                             >
                                 <div
                                     className={`absolute inset-0 rounded-full transition-all duration-500 ${isActive
-                                            ? "bg-gradient-to-r from-orange-500 to-orange-600 scale-100 opacity-100"
-                                            : "bg-orange-100 scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100"
+                                        ? "bg-gradient-to-r from-orange-500 to-orange-600 scale-100 opacity-100"
+                                        : "bg-orange-100 scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100"
                                         }`}
                                 />
                                 <div className="relative flex items-center space-x-2">
                                     <Icon
                                         className={`w-5 h-5 transition-colors duration-300 ${isActive
-                                                ? "text-white"
-                                                : "text-gray-700 group-hover:text-orange-600"
+                                            ? "text-white"
+                                            : "text-gray-700 group-hover:text-orange-600"
                                             }`}
                                     />
                                     <span
                                         className={`font-medium transition-colors duration-300 ${isActive
-                                                ? "text-white"
-                                                : "text-gray-700 group-hover:text-orange-600"
+                                            ? "text-white"
+                                            : "text-gray-700 group-hover:text-orange-600"
                                             }`}
                                     >
                                         {item.label}
@@ -596,8 +598,8 @@ const Navbar = () => {
                                         whileHover={{ x: 5 }}
                                         onClick={() => handleNavClick(item.path)}
                                         className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-300 ${isActive
-                                                ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg scale-105"
-                                                : "bg-white text-gray-700 hover:bg-orange-50 hover:scale-102"
+                                            ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg scale-105"
+                                            : "bg-white text-gray-700 hover:bg-orange-50 hover:scale-102"
                                             }`}
                                     >
                                         <Icon className="w-5 h-5" />

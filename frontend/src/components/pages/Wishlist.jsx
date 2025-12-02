@@ -1,13 +1,11 @@
-// src/pages/Wishlist.jsx
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { motion } from 'framer-motion';
+import { motion } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import { X, ShoppingCart, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import toast from 'react-hot-toast';
 import Navbar from '../ui/Navbar';
-import Footer from '../ui/Footer'; 
-import { removeFromWishlist} from '../../redux/slices/wishlistSlice';
+import Footer from '../ui/Footer';
+import { removeFromWishlist } from '../../redux/slices/wishlistSlice';
 import { addToCart as addToCartAction } from '../../redux/slices/cartSlice';
 
 const Wishlist = () => {

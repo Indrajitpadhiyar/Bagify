@@ -11,7 +11,7 @@ import Loading from '../ui/Loading';
 
 const AllProducts = () => {
     const dispatch = useDispatch();
-    const { loading, error, products, productCount } = useSelector((state) => state.products);
+    const { loading, error, products } = useSelector((state) => state.products);
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [filters, setFilters] = useState({

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion"; // eslint-disable-line no-unused-vars
 import {
     Mail, Lock, User, Eye, EyeOff,
     ChevronDown, ChevronUp, Sparkles, Loader2,
     Upload, X
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { clearErrors, login, register } from "../../redux/actions/user.Action"
@@ -17,7 +18,7 @@ const LoginSignUp = () => {
     const [isHovered, setIsHovered] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    // Login States
+    // Login States7
     const [loginEmail, setLoginEmail] = useState("");
     const [loginPassword, setLoginPassword] = useState("");
 
@@ -90,7 +91,7 @@ const LoginSignUp = () => {
 
         try {
             await dispatch(login(loginEmail, loginPassword));
-        } catch (err) {
+        } catch {
             toast.error("Login failed. Please try again.");
             setLoading(false);
         }
@@ -118,7 +119,7 @@ const LoginSignUp = () => {
             // Clear form
             setSignupName(""); setSignupEmail(""); setSignupPassword(""); setConfirmPassword("");
             setAvatarFile(null); setImagePreview(null);
-        } catch (err) {
+        } catch {
             toast.error("Registration failed");
         } finally {
             setLoading(false);
@@ -339,7 +340,7 @@ const LoginSignUp = () => {
                                                 <input type="checkbox" className="rounded text-orange-600" disabled={loading} />
                                                 <span className="text-gray-600">Remember me</span>
                                             </label>
-                                            <a href="#" className="text-orange-600 hover:underline">Forgot?</a>
+                                            <Link to="/password/forgot" className="text-orange-600 hover:underline">Forgot?</Link>
                                         </div>
 
                                         <motion.button

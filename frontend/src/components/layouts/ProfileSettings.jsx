@@ -1,7 +1,7 @@
 // src/components/ProfileSettings.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion"; // eslint-disable-line no-unused-vars
 import { Camera, Edit2, User, Mail, MapPin, Shield, Calendar, Phone } from "lucide-react";
 import { updateUser, clearErrors } from "../../redux/actions/user.Action";
 import toast from "react-hot-toast"; // ← Added for toast notifications
@@ -75,7 +75,7 @@ const ProfileSettings = () => {
             await dispatch(updateUser(data));
             toast.success("Profile updated successfully!");
             window.location.reload();
-        } catch (err) {
+        } catch {
             // Errors are handled globally via useEffect
         }
     };

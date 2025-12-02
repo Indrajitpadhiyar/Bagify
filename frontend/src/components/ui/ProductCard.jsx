@@ -1,6 +1,7 @@
 // src/components/ProductCard.jsx
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion'; // eslint-disable-line no-unused-vars
+
 import { ShoppingCart, Heart, Star, Zap } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';

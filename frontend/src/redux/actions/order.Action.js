@@ -50,3 +50,20 @@ export const cancelOrder = (orderId) => async (dispatch) => {
     });
   }
 };
+
+export const getOrderDetails = (orderId) => async (dispatch) => {
+  try {
+    dispatch({ type: "ORDER_DETAILS_REQUEST" });
+    const { data } = await API.get(`/order/${orderId}`);
+    dispatch({ type: "ORDER_DETAILS_SUCCESS", payload: data.order });
+  } catch (error) {
+    dispatch({
+      type: "ORDER_DETAILS_FAIL",
+      payload: error.response?.data?.message || error.message,
+    });
+  }
+};
+
+export const clearErrors = () => async (dispatch) => {
+  dispatch({ type: "CLEAR_ERRORS" });
+};

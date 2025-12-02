@@ -1,6 +1,6 @@
 // src/components/ui/FancyDeliveryStatus.jsx
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
 import { Truck, Package, CheckCircle, Clock, X } from "lucide-react";
 
 const FancyDeliveryStatus = ({ status = "Processing" }) => {
@@ -17,7 +17,7 @@ const FancyDeliveryStatus = ({ status = "Processing" }) => {
 
     useEffect(() => {
         setProgress(config.progress);
-    }, [status]);
+    }, [status, config.progress]);
 
     return (
         <motion.div

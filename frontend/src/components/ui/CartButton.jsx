@@ -1,6 +1,6 @@
 // src/components/CartButton.jsx
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
 import { ShoppingCart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';

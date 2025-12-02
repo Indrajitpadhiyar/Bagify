@@ -8,10 +8,14 @@ import {
 } from "./redux/reducer/product.Reducer";
 import cartReducer from "./redux/slices/cartSlice";
 import { userReducer } from "./redux/reducer/user.Reducer";
-import { myOrdersReducer, createOrderReducer } from "./redux/reducer/order.Reducer";
+import { myOrdersReducer, createOrderReducer, orderDetailsReducer } from "./redux/reducer/order.Reducer";
 import wishlistReducer from "./redux/slices/wishlistSlice";
 import { newReviewReducer } from "./redux/reducer/review.Reducer";
 import { createAddProductReducer } from "./redux/reducer/addProduct.Reducer";
+import {
+  forgotPasswordReducer,
+  resetPasswordReducer,
+} from "./redux/reducer/password.Reducer";
 
 const reducer = combineReducers({
   products: productReducer,
@@ -21,8 +25,11 @@ const reducer = combineReducers({
   wishlist: wishlistReducer,
   myOrders: myOrdersReducer,
   createOrder: createOrderReducer,
+  orderDetails: orderDetailsReducer,
   newReview: newReviewReducer,
   addProduct: createAddProductReducer,
+  forgotPassword: forgotPasswordReducer,
+  resetPassword: resetPasswordReducer,
 });
 
 let initialState = {

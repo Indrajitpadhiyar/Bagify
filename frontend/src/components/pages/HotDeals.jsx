@@ -1,11 +1,3 @@
-// src/pages/HotDeals.jsx
-import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Flame, Tag, Zap } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import Navbar from '../ui/Navbar';
-import Footer from '../ui/Footer';
 import ProductCard from '../ui/ProductCard';
 import { getProduct, clearErrors } from '../../redux/actions/product.Action'
 

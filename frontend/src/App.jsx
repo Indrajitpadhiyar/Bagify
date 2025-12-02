@@ -12,6 +12,8 @@ import Cart from './components/pages/Cart';
 import Wishlist from './components/pages/Wishlist';
 import HotDeals from './components/pages/HotDeals';
 import MyOrder from './components/pages/MyOrder';
+import ForgotPassword from './components/pages/ForgotPassword';
+import ResetPassword from './components/pages/ResetPassword';
 import './App.css';
 
 const App = () => {
@@ -35,6 +37,8 @@ const App = () => {
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/deals" element={<HotDeals />} />
         <Route path="/profile/orders" element={<MyOrder />} />
+        <Route path="/password/forgot" element={<ForgotPassword />} />
+        <Route path="/password/reset/:token" element={<ResetPassword />} />
       </Routes>
     </Router>
   );
