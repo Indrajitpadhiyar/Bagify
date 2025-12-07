@@ -35,7 +35,7 @@ export const loadUser = () => async (dispatch) => {
 
     dispatch({ type: USER_LOAD_SUCCESS, payload: data.user });
   } catch (error) {
-    localStorage.removeItem("token");
+    // Don't remove token on load fail, just show error
     dispatch({
       type: USER_LOAD_FAIL,
       payload: error.response?.data?.message || "Failed to load user",
@@ -84,34 +84,50 @@ export const register = (userData) => async (dispatch) => {
   }
 };
 
-// Update Profile (Frontend Action)
+// Update Profile (Fixed Version with Debug Logging)
 export const updateUser = (userData) => async (dispatch) => {
   try {
     dispatch({ type: USER_UPDATE_REQUEST });
 
+    // Debug: Log what we're sending
+    console.log("🔍 updateUser called with FormData");
+    for (let pair of userData.entries()) {
+      console.log(`  ${pair[0]}:`, pair[1]);
+    }
+
     const { data } = await API.put("/me/update", userData, {
-      headers: {
-        "Content-Type": "application/json",
-      },
       withCredentials: true,
+      // DO NOT set Content-Type header → let browser set boundary
     });
 
+    console.log("✅ Update response:", data);
+
+    // Save new token
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+    }
+
     dispatch({ type: USER_UPDATE_SUCCESS, payload: data.user });
+    return data;
   } catch (error) {
+    console.error("❌ Update error:", error.response?.data || error.message);
     dispatch({
       type: USER_UPDATE_FAIL,
       payload: error.response?.data?.message || "Update failed",
     });
+    throw error;
   }
 };
 
 // Logout
 export const logout = () => async (dispatch) => {
   try {
-    localStorage.removeItem("token");
     await API.get("/logout", { withCredentials: true });
+    localStorage.removeItem("token");
     dispatch({ type: USER_LOGOUT_SUCCESS });
   } catch (error) {
+    // Still logout even if API call fails
+    localStorage.removeItem("token");
     dispatch({
       type: USER_LOGOUT_FAIL,
       payload: error.response?.data?.message || "Logout failed",

@@ -2,6 +2,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import fileUpload from "express-fileupload";
+import os from "os";
 
 import product from "./src/routes/product.routes.js";
 import userRouter from "./src/routes/user.routes.js";
@@ -19,7 +20,7 @@ app.use(cookieParser());
 app.use(
   fileUpload({
     useTempFiles: true,
-    tempFileDir: "/tmp/",
+    tempFileDir: os.tmpdir(),
   })
 );
 

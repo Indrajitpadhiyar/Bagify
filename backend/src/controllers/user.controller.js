@@ -173,6 +173,10 @@ export const updatePassword = catchAsyncError(async (req, res, next) => {
 //update profile
 
 export const updateProfile = catchAsyncError(async (req, res, next) => {
+  console.log("🔍 updateProfile called");
+  console.log("  Body:", req.body);
+  console.log("  Files:", req.files);
+
   const newUserData = {
     name: req.body.name,
     email: req.body.email,
@@ -186,31 +190,44 @@ export const updateProfile = catchAsyncError(async (req, res, next) => {
     },
   };
 
-  // Handle Avatar
-  if (req.file) {
+  // Handle Avatar (Fixed: use req.files.avatar for express-fileupload)
+  if (req.files?.avatar) {
+    console.log("✅ Avatar file detected");
+    const avatarFile = req.files.avatar;
     const user = await User.findById(req.user.id);
 
-    if (user.avatar?.public_id) {
+    if (user.avatar?.public_id && user.avatar.public_id !== "default") {
+      console.log("🗑️ Deleting old avatar");
       await cloudinary.v2.uploader.destroy(user.avatar.public_id);
     }
 
-    const result = await cloudinary.v2.uploader.upload(req.file.path, {
+    console.log("☁️ Uploading to Cloudinary...");
+    const result = await cloudinary.v2.uploader.upload(avatarFile.tempFilePath, {
       folder: "avatars",
       width: 150,
       crop: "scale",
     });
 
+    console.log("✅ Upload successful:", result.secure_url);
+
     newUserData.avatar = {
       public_id: result.public_id,
       url: result.secure_url,
     };
+  } else {
+    console.log("⚠️ No avatar file in request");
   }
+
+  console.log("🔍 Updating user with dataaaaa:", newUserData);
+
 
   const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
     new: true,
     runValidators: true,
     useFindAndModify: false,
   });
+
+  console.log("✅ Profile updated successfully", user);
 
   res.status(200).json({
     success: true,

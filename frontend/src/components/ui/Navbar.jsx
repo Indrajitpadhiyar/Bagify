@@ -133,6 +133,8 @@ const UserAvatar = ({ user, size = "w-8 h-8", textSize = "text-sm" }) => {
         );
     }
 
+    console.log("Generating avatar for user:", user);
+
     const firstLetter = user?.name ? user.name.charAt(0).toUpperCase() : "U";
 
     const getColorClass = (letter) => {
@@ -177,6 +179,7 @@ const UserAvatar = ({ user, size = "w-8 h-8", textSize = "text-sm" }) => {
         </div>
     );
 };
+
 
 const UserDropdown = ({ user, onClose, onLogout }) => {
     const dropdownRef = useRef(null);
