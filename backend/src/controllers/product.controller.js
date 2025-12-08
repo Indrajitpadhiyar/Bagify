@@ -3,13 +3,15 @@ import ErrorHandler from "../utils/error.handler.js";
 import catchAsyncError from "../middlewares/catchAysncerror.middleware.js";
 import ApiFeatures from "../utils/apiFeatures.js";
 
+import cloudinary from "cloudinary";
+
 //create product-admin
 
 export const createProduct = async (req, res) => {
   try {
     const { name, price, description, category, stock } = req.body;
 
-    if (!name || !price || !description || !category) {
+    if (!name || !price || !description || !category || !stock) {
       return res.status(400).json({
         success: false,
         message: "Please provide all required fields",
@@ -23,22 +25,38 @@ export const createProduct = async (req, res) => {
       });
     }
 
-    const images = req.files.map((file) => ({
-      public_id: file.filename,
-      url: `https://bagifybackend-g2ty.onrender.com/uploads/${file.filename}`,
-    }));
+    let imagesLinks = [];
 
-    // YE SABSE IMPORTANT LINE HAI
+    // Handle images from express-fileupload
+    if (req.files && req.files.images) {
+      const images = Array.isArray(req.files.images)
+        ? req.files.images
+        : [req.files.images];
+
+      for (let i = 0; i < images.length; i++) {
+        const result = await cloudinary.v2.uploader.upload(images[i].tempFilePath, {
+          folder: "products",
+        });
+
+        imagesLinks.push({
+          public_id: result.public_id,
+          url: result.secure_url,
+        });
+      }
+    }
+
     const product = await Product.create({
       name,
       price: Number(price),
       description,
       category,
       stock: Number(stock) || 1,
-      images,
-      user: req.user._id, // ← YEH DAAL DE
-      seller: req.user._id, // ← agar model me seller bhi hai to yeh bhi daal de
+      images: imagesLinks,
+      user: req.user._id,
+      seller: req.user._id,
     });
+
+    console.log("Create Product Success:", product);
 
     return res.status(201).json({
       success: true,

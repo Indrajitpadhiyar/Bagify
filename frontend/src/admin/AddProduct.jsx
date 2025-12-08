@@ -3,8 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addProductReset } from "../redux/actions/addProduct.Action";
 import toast from "react-hot-toast";
 import { Upload, X } from "lucide-react";
-import Select from "react-select";
-import API from "../api/axiosClient";
+import AdminLayout from "../components/admin/AdminLayout";
 
 const AddProduct = () => {
   const dispatch = useDispatch();
@@ -145,16 +144,8 @@ const AddProduct = () => {
     try {
       setLoading(true);
 
-      const response = await API.post(
-        "/products/create",
-        productData,
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      // Let the browser/axios set Content-Type (with boundary) automatically
+      const response = await API.post("/products/create", productData);
 
       if (response.data.success) {
         toast.success("Product Created Successfully!");
@@ -171,14 +162,14 @@ const AddProduct = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-pink-50 py-12 px-4">
+    <AdminLayout>
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-5xl font-bold text-center mb-8 bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">
           Add New Product
         </h1>
 
-        <div className="bg-white rounded-3xl shadow-2xl p-8">
-          <form onSubmit={submitHandler} encType="multipart/form-data" className="space-y-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+          <form onSubmit={submitHandler} encType="multipart/form-data" className="space-y-6">
 
             {/* Name & Price */}
             <div className="grid md:grid-cols-2 gap-6">
@@ -187,7 +178,7 @@ const AddProduct = () => {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Product Name *"
-                className="w-full px-6 py-4 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-100 text-lg transition-all"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none"
                 required
               />
               <input
@@ -198,15 +189,15 @@ const AddProduct = () => {
                 value={formData.price}
                 onChange={handleChange}
                 placeholder="Price *"
-                className="w-full px-6 py-4 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 text-lg transition-all"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none"
                 required
               />
             </div>
 
             {/* Multiple Category Select */}
             <div>
-              <label className="text-xl font-bold mb-3 block text-gray-800">
-                Categories (Select multiple) *
+              <label className="text-sm font-semibold mb-2 block text-gray-700">
+                Categories *
               </label>
               <Select
                 isMulti
@@ -216,45 +207,43 @@ const AddProduct = () => {
                   formData.category.includes(option.value)
                 )}
                 onChange={handleCategoryChange}
-                placeholder="Choose categories..."
-                className="text-lg"
+                placeholder="Select categories..."
+                className="basic-multi-select"
                 classNamePrefix="select"
                 styles={{
-                  control: (base) => ({
+                  control: (base, state) => ({
                     ...base,
-                    padding: "0.6rem",
-                    borderRadius: "1rem",
-                    border: "2px solid #e5e7eb",
-                    boxShadow: "none",
+                    padding: "0.2rem",
+                    borderRadius: "0.75rem",
+                    borderColor: state.isFocused ? "#f97316" : "#e5e7eb",
+                    boxShadow: state.isFocused ? "0 0 0 4px rgba(249, 115, 22, 0.1)" : "none",
                     "&:hover": { borderColor: "#f97316" },
                   }),
                   multiValue: (base) => ({
                     ...base,
-                    backgroundColor: "#fff1f0",
-                    border: "1px solid #fda4af",
-                    borderRadius: "9999px",
+                    backgroundColor: "#fff7ed",
+                    border: "1px solid #ffedd5",
+                    borderRadius: "0.5rem",
                   }),
                   multiValueLabel: (base) => ({
                     ...base,
-                    color: "#dc2626",
+                    color: "#c2410c",
                     fontWeight: "600",
                   }),
                 }}
               />
-              <p className="text-sm text-gray-500 mt-2">Hold Ctrl/Cmd to select multiple</p>
             </div>
 
             {/* Stock */}
-            <div className="grid  gap-">
-
+            <div>
               <input
                 name="stock"
                 type="number"
                 min="1"
                 value={formData.stock}
                 onChange={handleChange}
-                placeholder="Stock Quantity (default: 1)"
-                className="w-full px-6 py-4 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 text-lg transition-all"
+                placeholder="Stock Quantity"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none"
               />
             </div>
 
@@ -264,54 +253,48 @@ const AddProduct = () => {
               value={formData.description}
               onChange={handleChange}
               placeholder="Product Description *"
-              rows="6"
-              className="w-full px-6 py-4 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 text-lg resize-none transition-all"
+              rows="5"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none resize-none"
               required
             />
 
             {/* Image Upload */}
-            <div>
-              <label className="text-xl font-bold mb-4 flex items-center gap-3 text-gray-800">
-                <Upload className="w-8 h-8 text-orange-600" />
-                Product Images (Max 5) *
-              </label>
+            <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-orange-400 transition-colors bg-gray-50/50">
               <input
                 ref={imageInputRef}
                 type="file"
+                id="file-upload"
                 multiple
                 accept="image/*"
                 onChange={handleImageChange}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-8 file:rounded-full file:border-0 file:bg-gradient-to-r file:from-orange-500 file:to-pink-600 file:text-white hover:file:from-orange-600 hover:file:to-pink-700 cursor-pointer transition-all"
+                className="hidden"
               />
-              <p className="text-sm text-gray-500 mt-2">
-                Max 5MB per image • JPG, PNG, WebP, GIF allowed
-              </p>
+              <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center gap-2">
+                <Upload className="w-10 h-10 text-orange-500" />
+                <span className="text-gray-600 font-medium">Click to upload product images</span>
+                <span className="text-xs text-gray-400">Max 5 images • JPG, PNG, WebP</span>
+              </label>
             </div>
 
             {/* Image Previews */}
             {imagesPreview.length > 0 && (
-              <div>
-                <p className="text-lg font-semibold mb-4 text-gray-700">
-                  Image Previews ({imagesPreview.length}/5)
-                </p>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                  {imagesPreview.map((img, i) => (
-                    <div key={i} className="relative group">
-                      <img
-                        src={img}
-                        alt={`Preview ${i + 1}`}
-                        className="w-full h-32 object-cover rounded-xl shadow-lg border-2 border-gray-100"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(i)}
-                        className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-700"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-4">
+                {imagesPreview.map((img, i) => (
+                  <div key={i} className="relative group aspect-square">
+                    <img
+                      src={img}
+                      alt={`Preview ${i + 1}`}
+                      className="w-full h-full object-cover rounded-xl border border-gray-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(i)}
+                      className="absolute -top-2 -right-2 bg-white text-red-500 shadow-md rounded-full p-1 opacity-100 hover:scale-110 transition-all border border-gray-100"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
 
@@ -319,21 +302,14 @@ const AddProduct = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-6 bg-gradient-to-r from-orange-600 to-pink-600 text-white text-2xl font-bold rounded-2xl hover:shadow-2xl transform hover:scale-105 transition-all disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="w-full py-4 bg-gradient-to-r from-orange-600 to-amber-600 text-white font-bold rounded-xl shadow-lg shadow-orange-200 hover:shadow-xl hover:translate-y-[-2px] transition-all disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
             >
-              {loading ? (
-                <div className="flex items-center justify-center gap-3">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-                  Adding Product...
-                </div>
-              ) : (
-                "Add Product"
-              )}
+              {loading ? "Creating..." : "Create Product"}
             </button>
           </form>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 

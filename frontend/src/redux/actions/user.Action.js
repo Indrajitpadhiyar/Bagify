@@ -15,6 +15,15 @@ import {
   USER_LOGOUT_SUCCESS,
   USER_LOGOUT_FAIL,
   CLEAR_ERRORS,
+  ALL_USERS_REQUEST,
+  ALL_USERS_SUCCESS,
+  ALL_USERS_FAIL,
+  DELETE_USER_REQUEST,
+  DELETE_USER_SUCCESS,
+  DELETE_USER_FAIL,
+  UPDATE_USER_ROLE_REQUEST,
+  UPDATE_USER_ROLE_SUCCESS,
+  UPDATE_USER_ROLE_FAIL,
 } from "../constans/user.Constans";
 
 // Helper to get auth header
@@ -69,8 +78,8 @@ export const register = (userData) => async (dispatch) => {
   try {
     dispatch({ type: USER_REGISTER_REQUEST });
 
+    // Let axios/browser set Content-Type (includes multipart boundary)
     const { data } = await API.post("/register", userData, {
-      headers: { "Content-Type": "multipart/form-data" },
       withCredentials: true,
     });
 
@@ -131,6 +140,59 @@ export const logout = () => async (dispatch) => {
     dispatch({
       type: USER_LOGOUT_FAIL,
       payload: error.response?.data?.message || "Logout failed",
+    });
+  }
+};
+
+// Get All Users
+export const getAllUsers = () => async (dispatch) => {
+  try {
+    dispatch({ type: ALL_USERS_REQUEST });
+    const { data } = await API.get("/admin/users");
+
+    dispatch({ type: ALL_USERS_SUCCESS, payload: data.users });
+  } catch (error) {
+    dispatch({
+      type: ALL_USERS_FAIL,
+      payload: error.response.data.message,
+    });
+  }
+};
+
+// Update User Role
+export const updateUserRole = (id, role) => async (dispatch) => {
+  try {
+    dispatch({ type: UPDATE_USER_ROLE_REQUEST });
+
+    const config = { headers: { "Content-Type": "application/json" } };
+
+    const { data } = await API.put(
+      `/admin/user/${id}`,
+      { role },
+      config
+    );
+
+    dispatch({ type: UPDATE_USER_ROLE_SUCCESS, payload: data.success });
+  } catch (error) {
+    dispatch({
+      type: UPDATE_USER_ROLE_FAIL,
+      payload: error.response.data.message,
+    });
+  }
+};
+
+// Delete User
+export const deleteUser = (id) => async (dispatch) => {
+  try {
+    dispatch({ type: DELETE_USER_REQUEST });
+
+    const { data } = await API.delete(`/admin/user/${id}`);
+
+    dispatch({ type: DELETE_USER_SUCCESS, payload: data });
+  } catch (error) {
+    dispatch({
+      type: DELETE_USER_FAIL,
+      payload: error.response.data.message,
     });
   }
 };

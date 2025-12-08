@@ -14,6 +14,11 @@ import HotDeals from './components/pages/HotDeals';
 import MyOrder from './components/pages/MyOrder';
 import ForgotPassword from './components/pages/ForgotPassword';
 import ResetPassword from './components/pages/ResetPassword';
+import ProtectedRoute from './components/routes/ProtectedRoute';
+import Dashboard from './components/admin/Dashboard';
+import ProductList from './components/admin/ProductList';
+import UsersList from './components/admin/UsersList';
+import AddProduct from './admin/AddProduct';
 import './App.css';
 
 const App = () => {
@@ -38,7 +43,16 @@ const App = () => {
         <Route path="/deals" element={<HotDeals />} />
         <Route path="/profile/orders" element={<MyOrder />} />
         <Route path="/password/forgot" element={<ForgotPassword />} />
+
         <Route path="/password/reset/:token" element={<ResetPassword />} />
+
+        {/* ADMIN ROUTES */}
+        <Route element={<ProtectedRoute isAdmin={true} />}>
+          <Route path="/admin/dashboard" element={<Dashboard />} />
+          <Route path="/admin/products" element={<ProductList />} />
+          <Route path="/admin/product/new" element={<AddProduct />} />
+          <Route path="/admin/users" element={<UsersList />} />
+        </Route>
       </Routes>
     </Router>
   );

@@ -12,17 +12,13 @@ export const addProduct = (formData, token) => async (dispatch) => {
 
     const config = {
       headers: {
-        "content-type": "multipart/form-data",
         Authorization: `${token}`,
       },
     };
     console.log("Config headers:", config.headers);
 
-    const { data } = await API.post(
-      "/products/create",
-      formData,
-      config
-    );
+    // Do not set Content-Type manually — let the browser set multipart boundary
+    const { data } = await API.post("/products/create", formData, config);
     console.log("Product added successfully:", data);
 
     dispatch({

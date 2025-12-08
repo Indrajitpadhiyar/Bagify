@@ -27,7 +27,7 @@
     "overlay-navbar": "^1.2.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-helmet": "^6.1.0",
+    "react-helmet-async": "^2.0.5",
     "react-hot-toast": "^2.6.0",
     "react-icons": "^5.5.0",
     "react-rating-stars-component": "^2.2.0",

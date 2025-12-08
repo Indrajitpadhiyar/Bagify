@@ -5,9 +5,15 @@ import { composeWithDevTools } from "@redux-devtools/extension";
 import {
   productDetailsReducer,
   productReducer,
+  productMutationReducer,
 } from "./redux/reducer/product.Reducer";
 import cartReducer from "./redux/slices/cartSlice";
-import { userReducer } from "./redux/reducer/user.Reducer";
+import {
+  userReducer,
+  allUsersReducer,
+  userDetailsReducer,
+  userMutationReducer,
+} from "./redux/reducer/user.Reducer";
 import { myOrdersReducer, createOrderReducer, orderDetailsReducer } from "./redux/reducer/order.Reducer";
 import wishlistReducer from "./redux/slices/wishlistSlice";
 import { newReviewReducer } from "./redux/reducer/review.Reducer";
@@ -30,6 +36,10 @@ const reducer = combineReducers({
   addProduct: createAddProductReducer,
   forgotPassword: forgotPasswordReducer,
   resetPassword: resetPasswordReducer,
+  productMutation: productMutationReducer,
+  allUsers: allUsersReducer,
+  userDetails: userDetailsReducer,
+  userMutation: userMutationReducer,
 });
 
 let initialState = {

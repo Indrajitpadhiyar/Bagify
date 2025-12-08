@@ -1,6 +1,7 @@
 import ProductCard from '../ui/ProductCard';
 import { getProduct, clearErrors } from '../../redux/actions/product.Action'
 
+
 const HotDeals = () => {
     const dispatch = useDispatch();
     const { loading, error, products } = useSelector((state) => state.allProduct || {});
