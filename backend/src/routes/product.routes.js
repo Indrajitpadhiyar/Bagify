@@ -8,6 +8,7 @@ import {
   createProductReview,
   deleteReview,
   getProductReviews,
+  getProductsCount,
 } from "../controllers/product.controller.js";
 import {
   isAuthenticated,
@@ -21,12 +22,16 @@ productRouter.route("/products").get(getAllProducts);
 
 productRouter
   .route("/products/create")
-  .post(
-    isAuthenticated,
-    authorizeRoles("admin"),
-    createProduct
-  );
+  .post(isAuthenticated, authorizeRoles("admin"), createProduct);
 
+productRouter
+  .route("/admin/products") // ←←← THIS WAS MISSING
+  .get(isAuthenticated, authorizeRoles("admin"), getAllProducts); // reuse same function
+
+productRouter
+  .route("/admin/productsCount")
+  .get(isAuthenticated, authorizeRoles("admin"), getProductsCount);
+  
 productRouter
   .route("/products/:id")
   .put(isAuthenticated, authorizeRoles("admin"), updateProduct)

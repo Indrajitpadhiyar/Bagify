@@ -34,9 +34,12 @@ export const createProduct = async (req, res) => {
         : [req.files.images];
 
       for (let i = 0; i < images.length; i++) {
-        const result = await cloudinary.v2.uploader.upload(images[i].tempFilePath, {
-          folder: "products",
-        });
+        const result = await cloudinary.v2.uploader.upload(
+          images[i].tempFilePath,
+          {
+            folder: "products",
+          }
+        );
 
         imagesLinks.push({
           public_id: result.public_id,
@@ -88,6 +91,16 @@ export const getAllProducts = catchAsyncError(async (req, res) => {
     success: true,
     products,
     productCount,
+  });
+});
+
+//total products number
+
+export const getProductsCount = catchAsyncError(async (req, res, next) => {
+  const productsCount = await Product.countDocuments();
+  res.status(200).json({
+    success: true,
+    productsCount,
   });
 });
 

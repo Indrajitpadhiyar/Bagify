@@ -202,11 +202,14 @@ export const updateProfile = catchAsyncError(async (req, res, next) => {
     }
 
     console.log("☁️ Uploading to Cloudinary...");
-    const result = await cloudinary.v2.uploader.upload(avatarFile.tempFilePath, {
-      folder: "avatars",
-      width: 150,
-      crop: "scale",
-    });
+    const result = await cloudinary.v2.uploader.upload(
+      avatarFile.tempFilePath,
+      {
+        folder: "avatars",
+        width: 150,
+        crop: "scale",
+      }
+    );
 
     console.log("✅ Upload successful:", result.secure_url);
 
@@ -219,7 +222,6 @@ export const updateProfile = catchAsyncError(async (req, res, next) => {
   }
 
   console.log("🔍 Updating user with dataaaaa:", newUserData);
-
 
   const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
     new: true,
@@ -260,25 +262,20 @@ export const getSigleUser = catchAsyncError(async (req, res, next) => {
 
 // update user role -- admin
 export const updateUserRole = catchAsyncError(async (req, res, next) => {
-  const newUserData = {
-    name: req.body.name,
-    email: req.body.email,
-    role: req.body.role,
-  };
+  const user = await User.findById(req.params.id);
 
-  // we will add cloudnary later
+  if (!user) {
+    return next(new ErrorHandler("User not found", 404));
+  }
 
-  const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
-    new: true,
-    runValidators: true,
-    useFindAndModify: false,
-  });
+  user.role = req.body.role;
+  await user.save({ validateBeforeSave: false });
 
   res.status(200).json({
     success: true,
+    message: `Role changed to ${req.body.role.toUpperCase()}`,
   });
 });
-
 // delete user -- admin
 export const deleteUser = catchAsyncError(async (req, res, next) => {
   const user = await User.findById(req.params.id);

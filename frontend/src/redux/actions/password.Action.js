@@ -40,6 +40,23 @@ export const resetPassword = (token, passwords) => async (dispatch) => {
     }
 };
 
+export const getAdminProducts = () => async (dispatch) => {
+  try {
+    dispatch({ type: ADMIN_PRODUCT_REQUEST });
+
+    const { data } = await API.get("/admin/products"); // or "/admin/products" – both work now
+
+    dispatch({
+      type: ADMIN_PRODUCT_SUCCESS,
+      payload: data.products,
+    });
+  } catch (error) {
+    dispatch({
+      type: ADMIN_PRODUCT_FAIL,
+      payload: error.response?.data?.message || "Failed to load products",
+    });
+  }
+};
 // Clear Errors
 export const clearErrors = () => async (dispatch) => {
     dispatch({ type: "CLEAR_ERRORS" });

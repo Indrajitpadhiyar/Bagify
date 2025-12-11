@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addProductReset } from "../redux/actions/addProduct.Action";
+import { addProductReset } from "../../redux/actions/addProduct.Action";
 import toast from "react-hot-toast";
 import { Upload, X } from "lucide-react";
-import AdminLayout from "../components/admin/AdminLayout";
+import AdminLayout from "./AdminLayout";
+import Select from "react-select";
+import API from "../../api/axiosClient";
 
 const AddProduct = () => {
   const dispatch = useDispatch();
