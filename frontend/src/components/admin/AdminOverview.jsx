@@ -126,7 +126,7 @@ const AdminOverview = () => {
       {/* Header with Back Button */}
       <div className="relative flex justify-center items-center">
         <motion.div variants={item} className="text-center">
-          <h1 className="text-5xl font-extrabold text-orange-900 bg-gradient-to-r from-orange-600 to-orange-400 bg-clip-text text-transparent">
+          <h1 className="text-5xl font-extrabold  bg-gradient-to-r from-orange-600 to-orange-400 bg-clip-text text-transparent">
             Admin Dashboard
           </h1>
           <p className="text-xl text-orange-600 mt-3">Real-time overview of your store</p>
