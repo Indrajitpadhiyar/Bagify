@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion"; // eslint-disable-line no-unused-vars
 import { MapPin, ChevronDown, ChevronUp, X } from "lucide-react";
 import FancyDeliveryStatus from "../ui/FancyDeliveryStatus";
+import socket from "../../utils/socket";
 
 const UserOrder = ({
     order,
@@ -10,6 +11,26 @@ const UserOrder = ({
     onToggleExpand,
     isExpanded,
 }) => {
+    const [status, setStatus] = useState(order.orderStatus);
+    const [timeline, setTimeline] = useState(order.timeline || []);
+
+    useEffect(() => {
+        // Listen for specific order updates
+        socket.emit("join_order", order._id);
+
+        const handleUpdate = (data) => {
+            console.log("Socket Update Received:", data);
+            setStatus(data.status);
+            if (data.timeline) setTimeline(data.timeline);
+        };
+
+        socket.on("order_status_update", handleUpdate);
+
+        return () => {
+            socket.off("order_status_update", handleUpdate);
+        };
+    }, [order._id]);
+
     return (
         <motion.div
             layout
@@ -24,7 +45,7 @@ const UserOrder = ({
             key={order._id}
             className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow"
         >
-            <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-5 md:p-6">
+            <div className={`bg-gradient-to-r ${status === 'Cancelled' ? 'from-red-500 to-rose-600' : 'from-orange-500 to-orange-600'} text-white p-5 md:p-6 transition-colors duration-500`}>
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div>
                         <p className="text-sm opacity-90">Order ID</p>
@@ -97,11 +118,11 @@ const UserOrder = ({
                     </div>
 
                     <div>
-                        <FancyDeliveryStatus status={order.orderStatus} />
+                        <FancyDeliveryStatus status={status} />
                     </div>
 
                     <div className="flex justify-between items-center">
-                        {order.orderStatus === "Processing" && (
+                        {status === "Processing" && (
                             <motion.button
                                 disabled={isCancelling}
                                 whileHover={{ scale: 1.05 }}
@@ -142,6 +163,28 @@ const UserOrder = ({
                         className="border-t border-gray-200 bg-white overflow-hidden"
                     >
                         <div className="p-5 md:p-6 space-y-5">
+                            {/* Timeline View */}
+                            {timeline.length > 0 && (
+                                <div className="mb-6 pb-6 border-b border-gray-100">
+                                    <h4 className="font-semibold text-gray-800 mb-4">Tracking History</h4>
+                                    <div className="space-y-4 pl-2">
+                                        {timeline.slice().reverse().map((event, idx) => (
+                                            <div key={idx} className="flex gap-3 relative">
+                                                {idx !== timeline.length - 1 && (
+                                                    <div className="absolute left-[5px] top-2 h-full w-0.5 bg-gray-200" />
+                                                )}
+                                                <div className={`w-3 h-3 rounded-full mt-1.5 flex-shrink-0 z-10 ${idx === 0 ? 'bg-orange-500' : 'bg-gray-300'}`} />
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-800">{event.status}</p>
+                                                    <p className="text-xs text-gray-500">{new Date(event.timestamp).toLocaleString()}</p>
+                                                    {event.message && <p className="text-xs text-gray-600 mt-0.5">{event.message}</p>}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             <div>
                                 <h4 className="font-semibold text-gray-800 mb-3">All Items</h4>
                                 <div className="space-y-3">

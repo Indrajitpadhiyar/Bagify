@@ -43,10 +43,10 @@ const FancyDeliveryStatus = ({ status = "Processing" }) => {
                     transition={{ duration: 1.5, repeat: Infinity }}
                     className="text-3xl"
                 >
-                    {status === "Processing"}
-                    {status === "Shipped" && "Racing Car"}
-                    {status === "Delivered" && "Checkmark"}
-                    {status === "Cancelled" && "Cross"}
+                    {status === "Processing" && "📦"}
+                    {status === "Shipped" && "🚚"}
+                    {status === "Delivered" && "🎉"}
+                    {status === "Cancelled" && "❌"}
                 </motion.div>
             </div>
 
@@ -105,7 +105,7 @@ const FancyDeliveryStatus = ({ status = "Processing" }) => {
                         transition={{ duration: 0.5, repeat: Infinity }}
                         className="text-6xl text-red-600"
                     >
-                        Cross
+                        <X className="w-16 h-16" />
                     </motion.div>
                 )}
             </div>

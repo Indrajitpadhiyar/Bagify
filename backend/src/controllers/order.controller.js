@@ -2,6 +2,7 @@ import Order from "../models/order.model.js";
 import Product from "../models/product.model.js";
 import ErrorHandler from "../utils/error.handler.js";
 import catchAsyncError from "../middlewares/catchAysncerror.middleware.js";
+import { io } from "../../server.js";
 
 // Create new order
 export const newOrder = catchAsyncError(async (req, res, next) => {
@@ -25,7 +26,17 @@ export const newOrder = catchAsyncError(async (req, res, next) => {
     totalPrice,
     paidAt: Date.now(),
     user: req.user._id,
+    timeline: [
+      {
+        status: "Processing",
+        message: "Order placed successfully",
+        timestamp: Date.now(),
+      },
+    ],
   });
+
+  // Emit New Order Event
+  io.emit("new_order", order);
 
   res.status(201).json({
     success: true,
@@ -52,7 +63,7 @@ export const getSingleOrder = catchAsyncError(async (req, res, next) => {
 
 // Get logged-in user's orders
 export const myOrders = catchAsyncError(async (req, res, next) => {
-  const orders = await Order.find({ user: req.user._id });
+  const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
 
   res.status(200).json({
     success: true,
@@ -62,7 +73,7 @@ export const myOrders = catchAsyncError(async (req, res, next) => {
 
 // Get all orders -- Admin
 export const getAllOrders = catchAsyncError(async (req, res, next) => {
-  const orders = await Order.find();
+  const orders = await Order.find().sort({ createdAt: -1 });
 
   let totalAmount = 0;
   orders.forEach((order) => {
@@ -98,7 +109,21 @@ export const updateOrder = catchAsyncError(async (req, res, next) => {
   }
 
   order.orderStatus = req.body.status;
+
+  // Add to timeline
+  order.timeline.push({
+    status: req.body.status,
+    message: `Order status updated to ${req.body.status}`,
+    timestamp: Date.now(),
+  });
+
   await order.save({ validateBeforeSave: false });
+
+  // Emit Status Update
+  io.to(order._id.toString()).emit("order_status_update", {
+    status: order.orderStatus,
+    timeline: order.timeline,
+  });
 
   res.status(200).json({
     success: true,
@@ -169,12 +194,24 @@ export const cancelOrder = catchAsyncError(async (req, res, next) => {
   order.orderStatus = "Cancelled";
   order.cancelledAt = Date.now();
 
+  order.timeline.push({
+    status: "Cancelled",
+    message: "Order cancelled by user",
+    timestamp: Date.now(),
+  });
+
   // Return items to stock
   for (const item of order.orderItems) {
     await updateStockReverse(item.product, item.quantity);
   }
 
   await order.save({ validateBeforeSave: false });
+
+  // Emit Cancel Update (Reuse update event or new one)
+  io.to(order._id.toString()).emit("order_status_update", {
+    status: "Cancelled",
+    timeline: order.timeline,
+  });
 
   res.status(200).json({
     success: true,

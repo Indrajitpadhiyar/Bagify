@@ -15,7 +15,9 @@ import MyOrder from './components/pages/MyOrder';
 import AdminOverview from './components/admin/AdminOverview';
 import ProductList from './components/admin/ProductList';
 import NewProduct from './components/admin/AddProduct';
-import UsersList from './components/admin/UsersList';
+import AdminOrders from "./components/admin/AdminOrders";
+import AdminOrderDetails from "./components/admin/AdminOrderDetails";
+import UserList from "./components/admin/UserList";
 // import ForgotPassword from './components/pages/ForgotPassword';
 import ResetPassword from './components/pages/ResetPassword';
 import ProtectedRoute from './components/routes/ProtectedRoute';
@@ -52,6 +54,8 @@ const App = () => {
           <Route path="/admin/dashboard" element={<AdminOverview />} />
           <Route path="/admin/products" element={<ProductList />} />
           <Route path="/admin/product/new" element={<NewProduct />} />
+          <Route path="/admin/orders" element={<AdminOrders />} />
+          <Route path="/admin/order/:id" element={<AdminOrderDetails />} />
           <Route path="/admin/users" element={<UsersList />} />
         </Route>
       </Routes>

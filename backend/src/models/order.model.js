@@ -102,7 +102,19 @@ const orderSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  timeline: [
+    {
+      status: { type: String },
+      timestamp: { type: Date, default: Date.now },
+      message: { type: String },
+    },
+  ],
+  isSeenByAdmin: {
+    type: Boolean,
+    default: false,
+  },
 });
+
 
 const Order = mongoose.model("Order", orderSchema);
 export default Order;

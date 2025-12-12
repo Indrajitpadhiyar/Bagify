@@ -55,13 +55,13 @@ const Profile = () => {
             label: isAdmin ? "All Orders" : "My Orders",
             icon: <ShoppingBag size={20} />,
         },
-        ...(isAdmin
-            ? [{
-                id: "add-product",
-                label: "Add Product",
-                icon: <PackagePlus size={20} />,
-            }]
-            : []),
+        // ...(isAdmin
+        //     ? [{
+        //         id: "add-product",
+        //         // label: "Add Product",
+        //         icon: <PackagePlus size={20} />,
+        //     }]
+        //     : []),
         ...(isAdmin
             ? [{ id: "admin", label: "Admin Panel", icon: <Shield size={20} /> }]
             : []),
@@ -380,7 +380,7 @@ const Profile = () => {
                 className="bg-white/90 backdrop-blur-md shadow-sm py-4 px-6 border-b border-gray-100 sticky top-0 z-30"
             >
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <div>
+                    <div className=" w-full flex flex-col items-center justify-center">
                         <h1 className="text-2xl font-bold text-gray-900">My Account</h1>
                         <p className="text-gray-600 text-sm">Welcome back, {user?.name?.split(" ")[0]}!</p>
                     </div>

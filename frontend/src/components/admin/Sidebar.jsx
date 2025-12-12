@@ -16,6 +16,7 @@ const Sidebar = ({ isOpen, onClose }) => {
 
     const menuItems = [
         { name: 'Dashboard', path: '/admin/dashboard', icon: <LayoutDashboard /> },
+        { name: 'Orders', path: '/admin/orders', icon: <ShoppingBag /> },
         { name: 'All Products', path: '/admin/products', icon: <ShoppingBag /> },
         { name: 'Add Product', path: '/admin/product/new', icon: <PlusCircle /> },
         { name: 'Users', path: '/admin/users', icon: <Users /> },
