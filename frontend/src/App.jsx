@@ -17,7 +17,7 @@ import ProductList from './components/admin/ProductList';
 import NewProduct from './components/admin/AddProduct';
 import AdminOrders from "./components/admin/AdminOrders";
 import AdminOrderDetails from "./components/admin/AdminOrderDetails";
-import UserList from "./components/admin/UserList";
+import UsersList from './components/admin/UsersList';
 // import ForgotPassword from './components/pages/ForgotPassword';
 import ResetPassword from './components/pages/ResetPassword';
 import ProtectedRoute from './components/routes/ProtectedRoute';

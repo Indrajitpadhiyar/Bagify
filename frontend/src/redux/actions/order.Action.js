@@ -9,6 +9,12 @@ import {
   CANCEL_ORDER_REQUEST,
   CANCEL_ORDER_SUCCESS,
   CANCEL_ORDER_FAIL,
+  GET_ALL_ORDERS_REQUEST,
+  GET_ALL_ORDERS_SUCCESS,
+  GET_ALL_ORDERS_FAIL,
+  UPDATE_ORDER_REQUEST,
+  UPDATE_ORDER_SUCCESS,
+  UPDATE_ORDER_FAIL,
 } from "../constans/order.Constants";
 
 
@@ -59,6 +65,34 @@ export const getOrderDetails = (orderId) => async (dispatch) => {
   } catch (error) {
     dispatch({
       type: "ORDER_DETAILS_FAIL",
+      payload: error.response?.data?.message || error.message,
+    });
+  }
+};
+
+export const getAllOrders = () => async (dispatch) => {
+  try {
+    dispatch({ type: GET_ALL_ORDERS_REQUEST });
+    const { data } = await API.get("/admin/orders");
+    dispatch({ type: GET_ALL_ORDERS_SUCCESS, payload: data.orders });
+  } catch (error) {
+    dispatch({
+      type: GET_ALL_ORDERS_FAIL,
+      payload: error.response?.data?.message || error.message,
+    });
+  }
+};
+
+export const updateOrder = (id, orderData) => async (dispatch) => {
+  try {
+    dispatch({ type: UPDATE_ORDER_REQUEST });
+    const { data } = await API.put(`/admin/order/${id}`, orderData, {
+      headers: { "Content-Type": "application/json" },
+    });
+    dispatch({ type: UPDATE_ORDER_SUCCESS, payload: data.success });
+  } catch (error) {
+    dispatch({
+      type: UPDATE_ORDER_FAIL,
       payload: error.response?.data?.message || error.message,
     });
   }

@@ -4,7 +4,7 @@ import { getOrderDetails, updateOrder, clearErrors } from "../../redux/actions/o
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Truck, Calendar, MapPin, CreditCard, Package, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
-import socket from "../../utils/socket";
+import socket from "../../utils/socket.js";
 import toast from "react-hot-toast";
 
 const AdminOrderDetails = () => {

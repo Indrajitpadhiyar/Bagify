@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion"; // eslint-disable-line no-unused-vars
 import { MapPin, ChevronDown, ChevronUp, X } from "lucide-react";
 import FancyDeliveryStatus from "../ui/FancyDeliveryStatus";
-import socket from "../../utils/socket";
+import socket from "../../utils/socket.js";
 
 const UserOrder = ({
     order,

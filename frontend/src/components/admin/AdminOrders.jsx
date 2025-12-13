@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllOrders, clearErrors, updateParams } from "../../redux/actions/order.Action";
+import { getAllOrders, clearErrors } from "../../redux/actions/order.Action.js";
 import { Link } from "react-router-dom";
 import { Eye, Trash2, SlidersHorizontal, ArrowUpDown, Bell } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import socket from "../../utils/socket";
+import socket from "../../utils/socket.js";
 import toast from "react-hot-toast";
 import FancyDeliveryStatus from "../ui/FancyDeliveryStatus";
 
