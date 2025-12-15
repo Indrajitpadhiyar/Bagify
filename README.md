@@ -39,47 +39,6 @@
 
 ---
 
-## 📁 Project Structure
-
-BAGIFY/
-│
-├── backend/
-│ ├── src/
-│ │ ├── config/ # DB & app configuration
-│ │ ├── controllers/ # Business logic
-│ │ ├── middlewares/ # Auth & error handling
-│ │ ├── models/ # MongoDB models
-│ │ ├── routes/ # API routes
-│ │ ├── utils/ # Helper functions
-│ │ └── uploads/ # Uploaded files
-│ │
-│ ├── app.js
-│ ├── server.js
-│ ├── package.json
-│ └── .env
-│
-├── frontend/
-│ ├── src/
-│ │ ├── api/ # API calls
-│ │ ├── assets/ # Images & static assets
-│ │ ├── components/ # Reusable UI components
-│ │ ├── redux/ # Redux store & slices
-│ │ ├── utils/ # Helper utilities
-│ │ │
-│ │ ├── App.jsx
-│ │ ├── main.jsx
-│ │ ├── store.js
-│ │ ├── axios.js
-│ │ └── index.css
-│ │
-│ ├── index.html
-│ ├── vite.config.js
-│ ├── package.json
-│ └── .env
-│
-└── README.md
-
-
 2️⃣ Backend Setup
 cd backend
 npm install
@@ -103,7 +62,7 @@ npm run dev
 👨‍💻 Developer
 
 Nikunj Solanki
-📧 Email: your-indrajitpadhiyar107@gmail.com
+📧 Email: indrajitpadhiyar107@gmail.com
 
 🌐 Portfolio: Coming Soon
 
