@@ -1,4 +1,11 @@
 import ProductCard from '../ui/ProductCard';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Flame, Zap, Tag } from 'lucide-react';
+import Navbar from '../ui/Navbar';
+import Footer from '../ui/Footer';
+import { useDispatch, useSelector } from 'react-redux';
 import { getProduct, clearErrors } from '../../redux/actions/product.Action'
 
 
