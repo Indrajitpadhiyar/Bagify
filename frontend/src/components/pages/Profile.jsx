@@ -11,6 +11,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { logout, clearErrors } from "../../redux/actions/user.Action";
+import { getMyOrders, cancelOrder, clearErrors as clearOrderErrors } from "../../redux/actions/order.Action";
 import ProfileSettings from "../layouts/ProfileSettings";
 import AddProduct from "../../components/admin/AddProduct";
 import toast from "react-hot-toast";
@@ -20,6 +21,7 @@ const Profile = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { user, isAuthenticated, error } = useSelector((state) => state.user);
+    const { orders, loading: ordersLoading, error: ordersError } = useSelector((state) => state.myOrders);
 
     const [activeSection, setActiveSection] = useState("profile");
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -37,7 +39,18 @@ const Profile = () => {
             toast.error(error);
             dispatch(clearErrors());
         }
-    }, [error, dispatch]);
+        if (ordersError) {
+            toast.error(ordersError);
+            dispatch(clearOrderErrors());
+        }
+    }, [error, ordersError, dispatch]);
+
+    // Fetch Orders
+    useEffect(() => {
+        if (activeSection === "orders") {
+            dispatch(getMyOrders());
+        }
+    }, [activeSection, dispatch]);
 
     const isAdmin = user?.role === "admin";
 
@@ -123,36 +136,52 @@ const Profile = () => {
             <h3 className="text-2xl font-bold text-gray-900">
                 {isAdmin ? "All Orders" : "My Orders"}
             </h3>
-            {[
-                { id: "ORD123", date: "Oct 28, 2025", total: "₹2,499", status: "Delivered" },
-                { id: "ORD124", date: "Oct 15, 2025", total: "₹1,299", status: "Shipped" },
-                { id: "ORD125", date: "Oct 10, 2025", total: "₹799", status: "Processing" },
-            ].map((order, i) => (
-                <motion.div
-                    key={order.id}
-                    initial={{ x: -50, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: i * 0.1 }}
-                    whileHover={{ scale: 1.02, boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}
-                    className="bg-white rounded-xl border border-gray-200 p-5 flex justify-between items-center shadow-sm hover:shadow-lg transition-all duration-300"
-                >
-                    <div>
-                        <p className="font-bold text-gray-900">#{order.id}</p>
-                        <p className="text-sm text-gray-600 mt-1">{order.date}</p>
-                    </div>
-                    <div className="text-right">
-                        <p className="font-bold text-gray-900 text-lg">{order.total}</p>
-                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ${order.status === "Delivered"
-                            ? "bg-green-100 text-green-700"
-                            : order.status === "Shipped"
-                                ? "bg-orange-100 text-orange-700"
-                                : "bg-yellow-100 text-yellow-700"
-                            }`}>
-                            {order.status}
-                        </span>
-                    </div>
-                </motion.div>
-            ))}
+            {ordersLoading ? (
+                <div className="text-center py-10">Loading orders...</div>
+            ) : orders && orders.length > 0 ? (
+                orders.map((order, i) => (
+                    <motion.div
+                        key={order._id}
+                        initial={{ x: -50, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: i * 0.1 }}
+                        whileHover={{ scale: 1.02, boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}
+                        className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col md:flex-row justify-between items-center shadow-sm hover:shadow-lg transition-all duration-300 gap-4"
+                    >
+                        <div>
+                            <p className="font-bold text-gray-900">#{order._id.slice(-6).toUpperCase()}</p>
+                            <p className="text-sm text-gray-600 mt-1">{new Date(order.createdAt).toLocaleDateString()}</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                                {order.orderItems.map(item => item.name).join(", ").substring(0, 30) + "..."}
+                            </p>
+                        </div>
+                        <div className="text-right flex flex-col items-end">
+                            <p className="font-bold text-gray-900 text-lg">₹{order.totalPrice.toLocaleString('en-IN')}</p>
+                            <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 mb-2 ${order.orderStatus === "Delivered"
+                                ? "bg-green-100 text-green-700"
+                                : order.orderStatus === "Shipped"
+                                    ? "bg-blue-100 text-blue-700"
+                                    : order.orderStatus === "Cancelled"
+                                        ? "bg-red-100 text-red-700"
+                                        : "bg-yellow-100 text-yellow-700"
+                                }`}>
+                                {order.orderStatus}
+                            </span>
+
+                            {order.orderStatus === "Processing" && (
+                                <button
+                                    onClick={() => dispatch(cancelOrder(order._id))}
+                                    className="px-3 py-1 bg-red-50 text-red-600 text-xs font-semibold rounded-lg hover:bg-red-100 transition"
+                                >
+                                    Cancel Order
+                                </button>
+                            )}
+                        </div>
+                    </motion.div>
+                ))
+            ) : (
+                <div className="text-center py-10 text-gray-500">No orders found.</div>
+            )}
             <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}

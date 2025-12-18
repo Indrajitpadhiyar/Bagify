@@ -21,8 +21,11 @@ const AdminOrders = () => {
 
         // Listen for new orders
         socket.on("new_order", (order) => {
+            const productNames = order.orderItems.map(item => item.name).join(", ");
+            const displayNames = productNames.length > 30 ? productNames.substring(0, 30) + "..." : productNames;
+
             toast.custom((t) => (
-                <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}>
+                <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5 border-l-4 border-orange-500`}>
                     <div className="flex-1 w-0 p-4">
                         <div className="flex items-start">
                             <div className="flex-shrink-0 pt-0.5">
@@ -30,7 +33,8 @@ const AdminOrders = () => {
                             </div>
                             <div className="ml-3 flex-1">
                                 <p className="text-sm font-medium text-gray-900">New Order Received!</p>
-                                <p className="mt-1 text-sm text-gray-500">Order #{order._id.slice(-6).toUpperCase()} - ₹{order.totalPrice}</p>
+                                <p className="mt-1 text-sm text-gray-500">#{order._id.slice(-6).toUpperCase()} • ₹{order.totalPrice}</p>
+                                <p className="mt-1 text-xs text-gray-400">{displayNames}</p>
                             </div>
                         </div>
                     </div>
@@ -111,6 +115,7 @@ const AdminOrders = () => {
                         <thead className="bg-gray-50 text-gray-600 text-sm uppercase">
                             <tr>
                                 <th className="px-6 py-4 font-semibold">Order ID</th>
+                                <th className="px-6 py-4 font-semibold">User</th>
                                 <th className="px-6 py-4 font-semibold">Status</th>
                                 <th className="px-6 py-4 font-semibold">Items Qty</th>
                                 <th className="px-6 py-4 font-semibold">Amount</th>
@@ -135,6 +140,12 @@ const AdminOrders = () => {
                                                     New
                                                 </span>
                                             )}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-col">
+                                                <span className="font-medium text-gray-900">{order.user?.name || "N/A"}</span>
+                                                <span className="text-xs text-gray-500">{order.user?.email}</span>
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[order.orderStatus] || 'bg-gray-100 text-gray-800'}`}>

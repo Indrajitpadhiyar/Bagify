@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { motion, AnimatePresence } from "framer-motion"; // eslint-disable-line no-unused-vars
+import { motion, AnimatePresence } from "framer-motion"; 
 import { ShoppingBag, AlertCircle, CheckCircle, X } from "lucide-react";
 import Navbar from "../ui/Navbar";
 import Footer from "../ui/Footer";

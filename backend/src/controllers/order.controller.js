@@ -16,6 +16,19 @@ export const newOrder = catchAsyncError(async (req, res, next) => {
     totalPrice,
   } = req.body;
 
+  // Check stock and deduct
+  for (const item of orderItems) {
+    const product = await Product.findById(item.product);
+    if (!product) {
+      return next(new ErrorHandler(`Product not found with id: ${item.product}`, 404));
+    }
+    if (product.stock < item.quantity) {
+      return next(new ErrorHandler(`Insufficient stock for product: ${product.name}`, 400));
+    }
+    product.stock -= item.quantity;
+    await product.save({ validateBeforeSave: false });
+  }
+
   const order = await Order.create({
     shippingInfo,
     orderItems,
@@ -73,7 +86,7 @@ export const myOrders = catchAsyncError(async (req, res, next) => {
 
 // Get all orders -- Admin
 export const getAllOrders = catchAsyncError(async (req, res, next) => {
-  const orders = await Order.find().sort({ createdAt: -1 });
+  const orders = await Order.find().populate("user", "name email").sort({ createdAt: -1 });
 
   let totalAmount = 0;
   orders.forEach((order) => {
@@ -100,11 +113,16 @@ export const updateOrder = catchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler("You have already delivered this order", 400));
   }
 
-  // Reduce stock when status becomes "Delivered"
-  if (req.body.status === "Delivered") {
+  // Restore stock when status becomes "Cancelled" (Admin action)
+  if (req.body.status === "Cancelled" && order.orderStatus !== "Cancelled") {
     for (const item of order.orderItems) {
-      await updateStock(item.product, item.quantity);
+      await updateStockReverse(item.product, item.quantity);
     }
+    order.cancelledAt = Date.now();
+  }
+
+  // If status is Delivered, just set the date
+  if (req.body.status === "Delivered" && order.orderStatus !== "Delivered") {
     order.deliveredAt = Date.now();
   }
 

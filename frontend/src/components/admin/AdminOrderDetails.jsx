@@ -61,14 +61,19 @@ const AdminOrderDetails = () => {
         dispatch(updateOrder(id, myForm));
     };
 
-    const statusOptions = ["Processing", "Shipped", "Delivered"];
+    const statusOptions = ["Processing", "Shipped", "Delivered", "Cancelled"];
 
     if (loading || !order) {
         return <div className="p-8 text-center">Loading Order Details...</div>;
     }
 
     return (
-        <div className="space-y-6">
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="space-y-6"
+        >
             <Link to="/admin/orders" className="flex items-center text-gray-500 hover:text-orange-600 transition mb-4">
                 <ArrowLeft className="w-4 h-4 mr-2" /> Back to Orders
             </Link>
@@ -77,7 +82,12 @@ const AdminOrderDetails = () => {
                 {/* Left Column: Order Info */}
                 <div className="flex-1 space-y-6">
                     {/* Header */}
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-orange-100">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="bg-white p-6 rounded-2xl shadow-sm border border-orange-100"
+                    >
                         <div className="flex justify-between items-start">
                             <div>
                                 <h1 className="text-2xl font-bold text-gray-800">Order #{order._id.slice(-6).toUpperCase()}</h1>
@@ -92,16 +102,21 @@ const AdminOrderDetails = () => {
                                 {order.orderStatus}
                             </span>
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Products */}
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
+                    >
                         <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                             <Package className="w-5 h-5 text-orange-500" /> Order Items
                         </h2>
                         <div className="space-y-4">
                             {order.orderItems.map((item) => (
-                                <div key={item._id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl">
+                                <div key={item._id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl hover:bg-orange-50 transition-colors duration-200">
                                     <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-lg" />
                                     <div className="flex-1">
                                         <p className="font-medium text-gray-800">{item.name}</p>
@@ -116,11 +131,16 @@ const AdminOrderDetails = () => {
                             <span>Total Amount</span>
                             <span className="text-orange-600">₹{order.totalPrice.toLocaleString('en-IN')}</span>
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Shipping & Payment */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                    >
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full">
                             <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
                                 <MapPin className="w-4 h-4 text-gray-400" /> Shipping Info
                             </h3>
@@ -133,7 +153,7 @@ const AdminOrderDetails = () => {
                             </div>
                         </div>
 
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full">
                             <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
                                 <CreditCard className="w-4 h-4 text-gray-400" /> Payment Info
                             </h3>
@@ -151,11 +171,16 @@ const AdminOrderDetails = () => {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
 
                 {/* Right Column: Actions & Timeline */}
-                <div className="w-full lg:w-80 space-y-6">
+                <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="w-full lg:w-80 space-y-6"
+                >
                     {/* Status Update */}
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-orange-100">
                         <h3 className="font-semibold text-gray-800 mb-4">Update Status</h3>
@@ -185,7 +210,7 @@ const AdminOrderDetails = () => {
                                 <button
                                     type="submit"
                                     disabled={loading || status === ""}
-                                    className="w-full py-2.5 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="w-full py-2.5 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition shadow-lg shadow-orange-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                                 >
                                     Update Status
                                 </button>
@@ -198,19 +223,25 @@ const AdminOrderDetails = () => {
                         <h3 className="font-semibold text-gray-800 mb-4">Order Timeline</h3>
                         <div className="relative pl-4 border-l-2 border-gray-200 space-y-6">
                             {order.timeline && order.timeline.slice().reverse().map((event, index) => (
-                                <div key={index} className="relative">
+                                <motion.div
+                                    key={index}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.5 + (index * 0.1) }}
+                                    className="relative"
+                                >
                                     <div className={`absolute -left-[21px] top-0.5 w-3 h-3 rounded-full border-2 border-white 
                                         ${index === 0 ? 'bg-orange-500 ring-2 ring-orange-200' : 'bg-gray-300'}`} />
                                     <p className="text-sm font-medium text-gray-800">{event.status}</p>
                                     <p className="text-xs text-gray-500 mt-0.5">{new Date(event.timestamp).toLocaleString()}</p>
                                     {event.message && <p className="text-xs text-gray-600 mt-1 italic">"{event.message}"</p>}
-                                </div>
+                                </motion.div>
                             ))}
                         </div>
                     </div>
-                </div>
+                </motion.div>
             </div>
-        </div>
+        </motion.div>
     );
 };
 
