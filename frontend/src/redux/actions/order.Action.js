@@ -74,7 +74,7 @@ export const getAllOrders = () => async (dispatch) => {
   try {
     dispatch({ type: GET_ALL_ORDERS_REQUEST });
     const { data } = await API.get("/admin/orders");
-    dispatch({ type: GET_ALL_ORDERS_SUCCESS, payload: data.orders });
+    dispatch({ type: GET_ALL_ORDERS_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
       type: GET_ALL_ORDERS_FAIL,

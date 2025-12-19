@@ -1,8 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getOrderDetails, updateOrder, clearErrors } from "../../redux/actions/order.Action";
+import {
+    getOrderDetails,
+    updateOrder,
+    clearErrors,
+} from "../../redux/actions/order.Action";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Truck, Calendar, MapPin, CreditCard, Package, CheckCircle } from "lucide-react";
+import {
+    ArrowLeft,
+    Truck,
+    Calendar,
+    MapPin,
+    CreditCard,
+    Package,
+    CheckCircle,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import socket from "../../utils/socket.js";
 import toast from "react-hot-toast";
@@ -15,21 +27,40 @@ const AdminOrderDetails = () => {
 
     const [status, setStatus] = useState("");
 
+    // Logical status flow: Processing → Shipped → Delivered (or Cancel at any time before Delivered)
+    const getAvailableStatuses = (currentStatus) => {
+        if (currentStatus === "Delivered" || currentStatus === "Cancelled") {
+            return [];
+        }
+
+        const flow = ["Processing", "Shipped", "Delivered"];
+        const currentIndex = flow.indexOf(currentStatus);
+
+        let options = ["Cancelled"]; // Always allow cancel before delivery
+
+        if (currentIndex !== -1) {
+            options = options.concat(flow.slice(currentIndex + 1));
+        } else {
+            options = options.concat(flow.slice(1)); // fallback
+        }
+
+        return options;
+    };
+
     useEffect(() => {
         dispatch(getOrderDetails(id));
 
-        // Join socket room
         socket.emit("join_order", id);
 
-        // Listen for real-time updates (e.g. if user cancels)
         socket.on("order_status_update", (data) => {
             dispatch(getOrderDetails(id));
-            toast.success("Order updated externally!");
+            toast.success("Order status updated in real-time!");
         });
 
         return () => {
             socket.off("order_status_update");
-        }
+            socket.emit("leave_order", id);
+        };
     }, [dispatch, id]);
 
     useEffect(() => {
@@ -48,200 +79,220 @@ const AdminOrderDetails = () => {
             dispatch(clearErrors());
         }
         if (isUpdated) {
-            toast.success("Order Updated Successfully");
+            toast.success("Order Status Updated Successfully!");
             dispatch({ type: "UPDATE_ORDER_RESET" });
-            dispatch(getOrderDetails(id)); // Refetch to be sure
+            dispatch(getOrderDetails(id));
         }
     }, [dispatch, error, updateError, isUpdated, id]);
 
     const updateOrderSubmitHandler = (e) => {
         e.preventDefault();
+        if (!status || status === order.orderStatus) {
+            toast.error("Please select a different status");
+            return;
+        }
         const myForm = new FormData();
         myForm.set("status", status);
         dispatch(updateOrder(id, myForm));
     };
 
-    const statusOptions = ["Processing", "Shipped", "Delivered", "Cancelled"];
-
     if (loading || !order) {
-        return <div className="p-8 text-center">Loading Order Details...</div>;
+        return (
+            <div className="p-8 text-center">
+                <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
+                <p className="mt-4 text-gray-600">Loading Order Details...</p>
+            </div>
+        );
     }
 
+    const availableStatuses = getAvailableStatuses(order.orderStatus);
+
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="space-y-6"
-        >
-            <Link to="/admin/orders" className="flex items-center text-gray-500 hover:text-orange-600 transition mb-4">
-                <ArrowLeft className="w-4 h-4 mr-2" /> Back to Orders
-            </Link>
-
-            <div className="flex flex-col lg:flex-row gap-6">
-                {/* Left Column: Order Info */}
-                <div className="flex-1 space-y-6">
-                    {/* Header */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="bg-white p-6 rounded-2xl shadow-sm border border-orange-100"
-                    >
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <h1 className="text-2xl font-bold text-gray-800">Order #{order._id.slice(-6).toUpperCase()}</h1>
-                                <p className="text-sm text-gray-500 mt-1 flex items-center gap-2">
-                                    <Calendar className="w-4 h-4" />
-                                    Placed on {new Date(order.createdAt).toLocaleString()}
-                                </p>
-                            </div>
-                            <span className={`px-4 py-1.5 rounded-full text-sm font-semibold 
-                                ${order.orderStatus === 'Delivered' ? 'bg-green-100 text-green-700' :
-                                    order.orderStatus === 'Cancelled' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
-                                {order.orderStatus}
-                            </span>
-                        </div>
-                    </motion.div>
-
-                    {/* Products */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
-                    >
-                        <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                            <Package className="w-5 h-5 text-orange-500" /> Order Items
-                        </h2>
-                        <div className="space-y-4">
-                            {order.orderItems.map((item) => (
-                                <div key={item._id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl hover:bg-orange-50 transition-colors duration-200">
-                                    <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-lg" />
-                                    <div className="flex-1">
-                                        <p className="font-medium text-gray-800">{item.name}</p>
-                                        <p className="text-xs text-gray-500">Product ID: {item.product}</p>
-                                        <p className="text-sm text-gray-600 mt-1">Quantity: {item.quantity}</p>
-                                    </div>
-                                    <p className="font-bold text-gray-900">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
-                                </div>
-                            ))}
-                        </div>
-                        <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center text-lg font-bold">
-                            <span>Total Amount</span>
-                            <span className="text-orange-600">₹{order.totalPrice.toLocaleString('en-IN')}</span>
-                        </div>
-                    </motion.div>
-
-                    {/* Shipping & Payment */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="grid grid-cols-1 md:grid-cols-2 gap-6"
-                    >
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full">
-                            <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                                <MapPin className="w-4 h-4 text-gray-400" /> Shipping Info
-                            </h3>
-                            <div className="text-sm text-gray-600 space-y-1">
-                                <p className="font-medium text-gray-900">{order.user?.name}</p>
-                                <p>{order.shippingInfo.address}</p>
-                                <p>{order.shippingInfo.city}, {order.shippingInfo.state}</p>
-                                <p>{order.shippingInfo.country} - {order.shippingInfo.pinCode}</p>
-                                <p className="mt-2 text-gray-500">Phone: {order.shippingInfo.phoneNo}</p>
-                            </div>
-                        </div>
-
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full">
-                            <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                                <CreditCard className="w-4 h-4 text-gray-400" /> Payment Info
-                            </h3>
-                            <div className="text-sm text-gray-600 space-y-2">
-                                <div className="flex justify-between">
-                                    <span>Status:</span>
-                                    <span className="text-green-600 font-medium">PAID</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>Method:</span>
-                                    <span>Online / Card</span>
-                                </div>
-                                <div className="mt-2 text-xs text-gray-400">
-                                    TxID: {order.paymentInfo.id}
-                                </div>
-                            </div>
-                        </div>
-                    </motion.div>
-                </div>
-
-                {/* Right Column: Actions & Timeline */}
-                <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="w-full lg:w-80 space-y-6"
+        <div className="max-w-7xl mx-auto p-4 md:p-6">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+            >
+                <Link
+                    to="/admin/orders"
+                    className="inline-flex items-center text-gray-500 hover:text-orange-600 transition"
                 >
-                    {/* Status Update */}
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-orange-100">
-                        <h3 className="font-semibold text-gray-800 mb-4">Update Status</h3>
-                        {order.orderStatus === "Delivered" ? (
-                            <div className="text-center p-4 bg-green-50 rounded-xl text-green-700 text-sm font-medium">
-                                <CheckCircle className="w-8 h-8 mx-auto mb-2 text-green-500" />
-                                Order Delivered
-                            </div>
-                        ) : order.orderStatus === "Cancelled" ? (
-                            <div className="text-center p-4 bg-red-50 rounded-xl text-red-700 text-sm font-medium">
-                                Order Cancelled
-                            </div>
-                        ) : (
-                            <form onSubmit={updateOrderSubmitHandler} className="space-y-4">
+                    <ArrowLeft className="w-5 h-5 mr-2" /> Back to Orders
+                </Link>
+
+                <div className="grid lg:grid-cols-3 gap-6">
+                    {/* Main Content */}
+                    <div className="lg:col-span-2 space-y-6">
+                        {/* Order Header */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-6">
+                            <div className="flex justify-between items-start flex-wrap gap-4">
                                 <div>
+                                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+                                        Order #{order._id.slice(-8).toUpperCase()}
+                                    </h1>
+                                    <p className="text-sm text-gray-500 mt-1 flex items-center gap-2">
+                                        <Calendar className="w-4 h-4" />
+                                        {new Date(order.createdAt).toLocaleString()}
+                                    </p>
+                                </div>
+                                <span
+                                    className={`px-5 py-2 rounded-full text-sm font-bold 
+                  ${order.orderStatus === "Delivered"
+                                            ? "bg-green-100 text-green-700"
+                                            : order.orderStatus === "Cancelled"
+                                                ? "bg-red-100 text-red-700"
+                                                : order.orderStatus === "Shipped"
+                                                    ? "bg-blue-100 text-blue-700"
+                                                    : "bg-yellow-100 text-yellow-800"
+                                        }`}
+                                >
+                                    {order.orderStatus}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Order Items */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                            <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <Package className="w-5 h-5 text-orange-500" /> Order Items
+                            </h2>
+                            <div className="space-y-4">
+                                {order.orderItems.map((item) => (
+                                    <div
+                                        key={item.product}
+                                        className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-orange-50 transition"
+                                    >
+                                        <img
+                                            src={item.image}
+                                            alt={item.name}
+                                            className="w-20 h-20 object-cover rounded-lg"
+                                        />
+                                        <div className="flex-1">
+                                            <p className="font-medium text-gray-800">{item.name}</p>
+                                            <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                                        </div>
+                                        <p className="font-bold text-gray-900">
+                                            ₹{(item.price * item.quantity).toLocaleString("en-IN")}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mt-6 pt-6 border-t-2 border-dashed border-gray-200 flex justify-between text-xl font-bold">
+                                <span>Total</span>
+                                <span className="text-orange-600">
+                                    ₹{order.totalPrice.toLocaleString("en-IN")}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Shipping & Payment */}
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                                <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                    <MapPin className="w-5 h-5 text-gray-400" /> Shipping Address
+                                </h3>
+                                <div className="text-sm text-gray-600 space-y-1">
+                                    <p className="font-medium text-gray-900">{order.user?.name}</p>
+                                    <p>{order.shippingInfo.address}</p>
+                                    <p>
+                                        {order.shippingInfo.city}, {order.shippingInfo.state} -{" "}
+                                        {order.shippingInfo.pinCode}
+                                    </p>
+                                    <p>{order.shippingInfo.country}</p>
+                                    <p className="mt-3">Phone: {order.shippingInfo.phoneNo}</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                                <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                    <CreditCard className="w-5 h-5 text-gray-400" /> Payment Info
+                                </h3>
+                                <div className="space-y-3 text-sm">
+                                    <div className="flex justify-between">
+                                        <span>Status</span>
+                                        <span className="text-green-600 font-bold">PAID</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Method</span>
+                                        <span>Online Payment</span>
+                                    </div>
+                                    <div className="text-xs text-gray-500 mt-3">
+                                        Transaction ID: {order.paymentInfo?.id || "N/A"}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Sidebar: Actions & Timeline */}
+                    <div className="space-y-6">
+                        {/* Status Update - ADMIN ONLY */}
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-orange-100">
+                            <h3 className="font-semibold text-gray-800 mb-4">Update Order Status</h3>
+
+                            {order.orderStatus === "Delivered" ? (
+                                <div className="text-center py-8 bg-green-50 rounded-xl">
+                                    <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-3" />
+                                    <p className="text-green-700 font-medium">Order Delivered</p>
+                                </div>
+                            ) : order.orderStatus === "Cancelled" ? (
+                                <div className="text-center py-8 bg-red-50 rounded-xl">
+                                    <p className="text-red-700 font-medium">Order Cancelled</p>
+                                </div>
+                            ) : availableStatuses.length > 0 ? (
+                                <form onSubmit={updateOrderSubmitHandler} className="space-y-4">
                                     <select
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none text-sm"
                                         value={status}
                                         onChange={(e) => setStatus(e.target.value)}
+                                        required
                                     >
-                                        <option value="">Choose Status</option>
-                                        {statusOptions.map((option) => (
-                                            <option key={option} value={option}>{option}</option>
+                                        <option value={order.orderStatus} disabled>
+                                            Current: {order.orderStatus}
+                                        </option>
+                                        {availableStatuses.map((opt) => (
+                                            <option key={opt} value={opt}>
+                                                → {opt}
+                                            </option>
                                         ))}
                                     </select>
-                                </div>
-                                <button
-                                    type="submit"
-                                    disabled={loading || status === ""}
-                                    className="w-full py-2.5 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition shadow-lg shadow-orange-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
-                                >
-                                    Update Status
-                                </button>
-                            </form>
-                        )}
-                    </div>
 
-                    {/* Timeline */}
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h3 className="font-semibold text-gray-800 mb-4">Order Timeline</h3>
-                        <div className="relative pl-4 border-l-2 border-gray-200 space-y-6">
-                            {order.timeline && order.timeline.slice().reverse().map((event, index) => (
-                                <motion.div
-                                    key={index}
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: 0.5 + (index * 0.1) }}
-                                    className="relative"
-                                >
-                                    <div className={`absolute -left-[21px] top-0.5 w-3 h-3 rounded-full border-2 border-white 
-                                        ${index === 0 ? 'bg-orange-500 ring-2 ring-orange-200' : 'bg-gray-300'}`} />
-                                    <p className="text-sm font-medium text-gray-800">{event.status}</p>
-                                    <p className="text-xs text-gray-500 mt-0.5">{new Date(event.timestamp).toLocaleString()}</p>
-                                    {event.message && <p className="text-xs text-gray-600 mt-1 italic">"{event.message}"</p>}
-                                </motion.div>
-                            ))}
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition disabled:opacity-60"
+                                    >
+                                        {loading ? "Updating..." : "Update Status"}
+                                    </button>
+                                </form>
+                            ) : (
+                                <p className="text-gray-500 text-center">No further updates possible</p>
+                            )}
+                        </div>
+
+                        {/* Timeline */}
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                            <h3 className="font-semibold text-gray-800 mb-5">Order Timeline</h3>
+                            <div className="space-y-6 relative before:absolute before:left-5 before:top-0 before:bottom-0 before:w-0.5 before:bg-gray-200">
+                                {order.timeline?.slice().reverse().map((event, idx) => (
+                                    <div key={idx} className="relative pl-12">
+                                        <div className="absolute left-3 top-1 w-4 h-4 bg-orange-500 rounded-full ring-4 ring-white" />
+                                        <p className="font-medium text-gray-800">{event.status}</p>
+                                        <p className="text-xs text-gray-500">
+                                            {new Date(event.timestamp).toLocaleString()}
+                                        </p>
+                                        {event.message && (
+                                            <p className="text-xs text-gray-600 italic mt-1">"{event.message}"</p>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
-                </motion.div>
-            </div>
-        </motion.div>
+                </div>
+            </motion.div>
+        </div>
     );
 };
 

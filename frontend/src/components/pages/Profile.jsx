@@ -6,53 +6,58 @@ import {
     Home,
     User,
     ShoppingBag,
-    PackagePlus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { logout, clearErrors } from "../../redux/actions/user.Action";
-import { getMyOrders, cancelOrder, clearErrors as clearOrderErrors } from "../../redux/actions/order.Action";
+import {
+    getMyOrders,
+    getAllOrders,
+    clearErrors as clearOrderErrors,
+} from "../../redux/actions/order.Action";
 import ProfileSettings from "../layouts/ProfileSettings";
-import AddProduct from "../../components/admin/AddProduct";
-import toast from "react-hot-toast";
 import AdminOverview from "../admin/AdminOverview";
+import AdminOrders from "../admin/AdminOrders"; // Full admin order management
+import toast from "react-hot-toast";
 
 const Profile = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+
     const { user, isAuthenticated, error } = useSelector((state) => state.user);
-    const { orders, loading: ordersLoading, error: ordersError } = useSelector((state) => state.myOrders);
+    const { loading: myOrdersLoading, orders: myOrders = [] } = useSelector((state) => state.myOrders || {});
+    const { loading: allOrdersLoading, orders: allOrders = [] } = useSelector((state) => state.allOrders || {});
 
     const [activeSection, setActiveSection] = useState("profile");
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    // Redirect if not logged in
+    const isAdmin = user?.role === "admin";
+
+    // Redirect if not authenticated
     useEffect(() => {
-        if (!isAuthenticated && isAuthenticated !== null) {
+        if (isAuthenticated === false) {
             navigate("/login");
         }
     }, [isAuthenticated, navigate]);
 
-    // Show error toast
+    // Handle errors
     useEffect(() => {
         if (error) {
             toast.error(error);
             dispatch(clearErrors());
         }
-        if (ordersError) {
-            toast.error(ordersError);
-            dispatch(clearOrderErrors());
-        }
-    }, [error, ordersError, dispatch]);
+    }, [error, dispatch]);
 
-    // Fetch Orders
+    // Fetch appropriate orders when "orders" section is active
     useEffect(() => {
         if (activeSection === "orders") {
-            dispatch(getMyOrders());
+            if (isAdmin) {
+                dispatch(getAllOrders());
+            } else {
+                dispatch(getMyOrders());
+            }
         }
-    }, [activeSection, dispatch]);
-
-    const isAdmin = user?.role === "admin";
+    }, [activeSection, isAdmin, dispatch]);
 
     const handleLogout = () => {
         dispatch(logout());
@@ -60,343 +65,94 @@ const Profile = () => {
         navigate("/");
     };
 
+    // Navigation items
     const navItems = [
         { id: "home", label: "Home", icon: <Home size={20} />, href: "/" },
-        { id: "profile", label: "Profile", icon: <User size={20} /> },
+        { id: "profile", label: "Profile Settings", icon: <User size={20} /> },
         {
             id: "orders",
             label: isAdmin ? "All Orders" : "My Orders",
             icon: <ShoppingBag size={20} />,
         },
-        // ...(isAdmin
-        //     ? [{
-        //         id: "add-product",
-        //         // label: "Add Product",
-        //         icon: <PackagePlus size={20} />,
-        //     }]
-        //     : []),
         ...(isAdmin
-            ? [{ id: "admin", label: "Admin Panel", icon: <Shield size={20} /> }]
+            ? [{ id: "admin", label: "Dashboard", icon: <Shield size={20} /> }]
             : []),
     ];
 
-    // Animation Variants
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: { staggerChildren: 0.08, delayChildren: 0.1 }
-        },
-    };
-
-    const childVariants = {
-        hidden: { y: 20, opacity: 0 },
-        visible: {
-            y: 0,
-            opacity: 1,
-            transition: { type: "spring", stiffness: 120 }
-        },
-    };
-
-    const sidebarVariants = {
-        hidden: { x: -300, opacity: 0 },
-        visible: {
-            x: 0,
-            opacity: 1,
-            transition: { type: "spring", damping: 25, stiffness: 200 }
-        },
-        exit: {
-            x: -300,
-            opacity: 0,
-            transition: { duration: 0.2 }
-        }
-    };
-
-    const mobileMenuVariants = {
-        hidden: { y: 100, opacity: 0 },
-        visible: {
-            y: 0,
-            opacity: 1,
-            transition: { type: "spring", damping: 25 }
-        },
-        exit: {
-            y: 100,
-            opacity: 0,
-            transition: { duration: 0.2 }
-        }
-    };
-
-    const OrdersSection = () => (
+    // Preview of recent orders for regular users
+    const UserOrdersPreview = () => (
         <motion.div
-            variants={childVariants}
-            initial="hidden"
-            animate="visible"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
         >
-            <h3 className="text-2xl font-bold text-gray-900">
-                {isAdmin ? "All Orders" : "My Orders"}
-            </h3>
-            {ordersLoading ? (
-                <div className="text-center py-10">Loading orders...</div>
-            ) : orders && orders.length > 0 ? (
-                orders.map((order, i) => (
-                    <motion.div
-                        key={order._id}
-                        initial={{ x: -50, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: i * 0.1 }}
-                        whileHover={{ scale: 1.02, boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}
-                        className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col md:flex-row justify-between items-center shadow-sm hover:shadow-lg transition-all duration-300 gap-4"
-                    >
-                        <div>
-                            <p className="font-bold text-gray-900">#{order._id.slice(-6).toUpperCase()}</p>
-                            <p className="text-sm text-gray-600 mt-1">{new Date(order.createdAt).toLocaleDateString()}</p>
-                            <p className="text-xs text-gray-500 mt-1">
-                                {order.orderItems.map(item => item.name).join(", ").substring(0, 30) + "..."}
-                            </p>
-                        </div>
-                        <div className="text-right flex flex-col items-end">
-                            <p className="font-bold text-gray-900 text-lg">₹{order.totalPrice.toLocaleString('en-IN')}</p>
-                            <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 mb-2 ${order.orderStatus === "Delivered"
-                                ? "bg-green-100 text-green-700"
-                                : order.orderStatus === "Shipped"
-                                    ? "bg-blue-100 text-blue-700"
-                                    : order.orderStatus === "Cancelled"
-                                        ? "bg-red-100 text-red-700"
-                                        : "bg-yellow-100 text-yellow-700"
-                                }`}>
-                                {order.orderStatus}
-                            </span>
+            <div className="flex justify-between items-center">
+                <h3 className="text-2xl font-bold text-gray-900">My Orders</h3>
+                <span className="text-sm text-gray-500">{myOrders.length} order{myOrders.length !== 1 ? 's' : ''}</span>
+            </div>
 
-                            {order.orderStatus === "Processing" && (
-                                <button
-                                    onClick={() => dispatch(cancelOrder(order._id))}
-                                    className="px-3 py-1 bg-red-50 text-red-600 text-xs font-semibold rounded-lg hover:bg-red-100 transition"
-                                >
-                                    Cancel Order
-                                </button>
-                            )}
-                        </div>
-                    </motion.div>
-                ))
+            {myOrdersLoading ? (
+                <div className="text-center py-12">
+                    <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
+                    <p className="mt-4 text-gray-600">Loading your orders...</p>
+                </div>
+            ) : myOrders.length > 0 ? (
+                <div className="space-y-4">
+                    {myOrders.slice(0, 6).map((order, index) => (
+                        <motion.div
+                            key={order._id}
+                            initial={{ opacity: 0, x: -30 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                            className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all"
+                        >
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="font-bold text-gray-900">
+                                        #{order._id.slice(-8).toUpperCase()}
+                                    </p>
+                                    <p className="text-sm text-gray-600 mt-1">
+                                        {new Date(order.createdAt).toLocaleDateString('en-IN', {
+                                            day: 'numeric',
+                                            month: 'long',
+                                            year: 'numeric'
+                                        })}
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-2">
+                                        {order.orderItems.length} item{order.orderItems.length > 1 ? 's' : ''} • {order.orderItems.map(i => i.name).join(", ").slice(0, 50)}...
+                                    </p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="font-bold text-lg text-orange-600">
+                                        ₹{order.totalPrice.toLocaleString('en-IN')}
+                                    </p>
+                                    <span className={`mt-2 inline-block px-4 py-1.5 rounded-full text-xs font-semibold ${order.orderStatus === "Delivered" ? "bg-green-100 text-green-700" :
+                                            order.orderStatus === "Cancelled" ? "bg-red-100 text-red-700" :
+                                                order.orderStatus === "Shipped" ? "bg-blue-100 text-blue-700" :
+                                                    "bg-yellow-100 text-yellow-700"
+                                        }`}>
+                                        {order.orderStatus}
+                                    </span>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
             ) : (
-                <div className="text-center py-10 text-gray-500">No orders found.</div>
+                <div className="text-center py-12">
+                    <ShoppingBag className="w-20 h-20 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500">You haven't placed any orders yet.</p>
+                </div>
             )}
+
             <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate("/orders")}
-                className="w-full bg-gradient-to-r from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 text-orange-700 font-medium py-3 rounded-lg border border-orange-300 transition-all duration-300 shadow-sm hover:shadow"
+                className="w-full py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition"
             >
-                View All Orders →
+                View All My Orders →
             </motion.button>
-        </motion.div>
-    );
-
-    // Desktop Sidebar
-    const Sidebar = () => (
-        <motion.aside
-            initial="hidden"
-            animate="visible"
-            variants={sidebarVariants}
-            className="hidden lg:flex flex-col w-80 bg-white shadow-2xl border-r border-gray-100"
-        >
-            <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-8 text-center border-b border-gray-100"
-            >
-                {user?.avatar?.url ? (
-                    <motion.img
-                        whileHover={{ scale: 1.1, rotate: 5 }}
-                        src={user.avatar.url}
-                        alt={user.name}
-                        className="w-24 h-24 rounded-full mx-auto object-cover ring-4 ring-orange-200 shadow-lg"
-                    />
-                ) : (
-                    <UserAvatar user={user} />
-                )}
-                <motion.h2
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.1 }}
-                    className="mt-4 text-xl font-bold text-gray-900"
-                >
-                    {user?.name || "User"}
-                </motion.h2>
-                <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className="text-gray-600 text-sm mt-1"
-                >
-                    {user?.email}
-                </motion.p>
-                {isAdmin && (
-                    <motion.span
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.3 }}
-                        className="inline-flex items-center gap-1 mt-3 px-4 py-1 bg-gradient-to-r from-orange-100 to-orange-200 text-orange-700 rounded-full text-sm font-medium"
-                    >
-                        <Shield size={14} /> Admin Access
-                    </motion.span>
-                )}
-            </motion.div>
-
-            <nav className="flex-1 p-4 space-y-2">
-                {navItems.map((item, i) => (
-                    <motion.div
-                        key={item.id}
-                        initial={{ x: -40, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: i * 0.05 }}
-                    >
-                        <NavItem
-                            icon={item.icon}
-                            label={item.label}
-                            active={activeSection === item.id}
-                            onClick={() => {
-                                if (item.href) navigate(item.href);
-                                else setActiveSection(item.id);
-                            }}
-                        />
-                    </motion.div>
-                ))}
-
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="mt-6"
-                >
-                    <motion.button
-                        whileHover={{ scale: 1.05, x: 5 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={handleLogout}
-                        className="w-full flex items-center justify-center gap-3 px-5 py-3 bg-gradient-to-r from-red-50 to-red-100 text-red-600 rounded-xl font-medium hover:from-red-100 hover:to-red-200 transition-all duration-300 shadow-sm"
-                    >
-                        <LogOut size={20} />
-                        <span>Logout</span>
-                    </motion.button>
-                </motion.div>
-            </nav>
-        </motion.aside>
-    );
-
-    // Mobile Sidebar Overlay
-    const MobileSidebar = () => (
-        <AnimatePresence>
-            {isSidebarOpen && (
-                <>
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setIsSidebarOpen(false)}
-                        className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden"
-                    />
-                    <motion.aside
-                        variants={sidebarVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        className="fixed top-0 left-0 h-full w-80 bg-white shadow-2xl z-50 lg:hidden"
-                    >
-                        <div className="p-6 border-b border-gray-100">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-xl font-bold text-gray-900">My Account</h2>
-                                <button
-                                    onClick={() => setIsSidebarOpen(false)}
-                                    className="p-2 hover:bg-gray-100 rounded-full"
-                                >
-                                    ✕
-                                </button>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                {user?.avatar?.url ? (
-                                    <img
-                                        src={user.avatar.url}
-                                        alt={user.name}
-                                        className="w-14 h-14 rounded-full object-cover ring-2 ring-orange-300"
-                                    />
-                                ) : (
-                                    <UserAvatar user={user} small />
-                                )}
-                                <div>
-                                    <h3 className="font-bold text-gray-900">{user?.name}</h3>
-                                    <p className="text-sm text-gray-600">{user?.email}</p>
-                                    {isAdmin && (
-                                        <span className="inline-block mt-1 px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full">
-                                            Admin
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        <nav className="p-4 space-y-2">
-                            {navItems.map((item) => (
-                                <button
-                                    key={item.id}
-                                    onClick={() => {
-                                        if (item.href) navigate(item.href);
-                                        else setActiveSection(item.id);
-                                        setIsSidebarOpen(false);
-                                    }}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left ${activeSection === item.id
-                                        ? "bg-gradient-to-r from-orange-50 to-orange-100 text-orange-700"
-                                        : "text-gray-700 hover:bg-gray-50"
-                                        }`}
-                                >
-                                    {item.icon}
-                                    <span>{item.label}</span>
-                                </button>
-                            ))}
-                        </nav>
-                    </motion.aside>
-                </>
-            )}
-        </AnimatePresence>
-    );
-
-    // Mobile Bottom Navigation
-    const MobileTabs = () => (
-        <motion.div
-            variants={mobileMenuVariants}
-            initial="hidden"
-            animate="visible"
-            className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-2xl z-40"
-        >
-            <div className="flex justify-around items-center py-2 px-1">
-                <button
-                    onClick={() => setIsSidebarOpen(true)}
-                    className="flex flex-col items-center p-2"
-                >
-                    <User size={20} />
-                    <span className="text-xs mt-1">Menu</span>
-                </button>
-                {navItems.slice(0, 3).map((item) => (
-                    <button
-                        key={item.id}
-                        onClick={() => item.href ? navigate(item.href) : setActiveSection(item.id)}
-                        className={`flex flex-col items-center p-2 rounded-lg transition-all ${activeSection === item.id
-                            ? "text-orange-600 bg-orange-50"
-                            : "text-gray-600"
-                            }`}
-                    >
-                        {item.icon}
-                        <span className="text-xs mt-1">{item.label}</span>
-                    </button>
-                ))}
-                <button
-                    onClick={handleLogout}
-                    className="flex flex-col items-center p-2 text-red-600"
-                >
-                    <LogOut size={20} />
-                    <span className="text-xs mt-1">Logout</span>
-                </button>
-            </div>
         </motion.div>
     );
 
@@ -404,79 +160,207 @@ const Profile = () => {
         <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
             {/* Header */}
             <motion.header
-                initial={{ y: -50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                className="bg-white/90 backdrop-blur-md shadow-sm py-4 px-6 border-b border-gray-100 sticky top-0 z-30"
+                initial={{ y: -60 }}
+                animate={{ y: 0 }}
+                className="bg-white/90 backdrop-blur-md shadow-md py-5 px-6 border-b border-gray-100 sticky top-0 z-40"
             >
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <div className=" w-full flex flex-col items-center justify-center">
-                        <h1 className="text-2xl font-bold text-gray-900">My Account</h1>
-                        <p className="text-gray-600 text-sm">Welcome back, {user?.name?.split(" ")[0]}!</p>
+                    <div className="text-center flex-1">
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">My Account</h1>
+                        <p className="text-gray-600 mt-1">Welcome back, {user?.name?.split(" ")[0]}!</p>
                     </div>
                     <button
                         onClick={() => setIsSidebarOpen(true)}
-                        className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
+                        className="lg:hidden p-3 hover:bg-gray-100 rounded-full"
                     >
-                        <User size={24} />
+                        <User size={26} />
                     </button>
                 </div>
             </motion.header>
 
-            <div className="flex">
-                <Sidebar />
-                <MobileSidebar />
+            <div className="flex relative">
+                {/* Desktop Sidebar */}
+                <aside className="hidden lg:block w-80 bg-white shadow-2xl border-r border-gray-100 min-h-screen">
+                    <div className="p-8 text-center border-b border-gray-100">
+                        {user?.avatar?.url ? (
+                            <img
+                                src={user.avatar.url}
+                                alt={user.name}
+                                className="w-28 h-28 rounded-full mx-auto object-cover ring-8 ring-orange-100 shadow-xl"
+                            />
+                        ) : (
+                            <div className="w-28 h-28 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-5xl font-bold mx-auto ring-8 ring-orange-100">
+                                {user?.name?.charAt(0).toUpperCase() || "U"}
+                            </div>
+                        )}
+                        <h2 className="mt-6 text-2xl font-bold text-gray-900">{user?.name}</h2>
+                        <p className="text-gray-600 mt-1">{user?.email}</p>
+                        {isAdmin && (
+                            <span className="inline-flex items-center gap-2 mt-4 px-5 py-2 bg-gradient-to-r from-orange-100 to-orange-200 text-orange-700 rounded-full text-sm font-bold">
+                                <Shield size={16} /> Admin Access
+                            </span>
+                        )}
+                    </div>
 
-                {/* Main Content */}
-                <main className="flex-1 p-4 lg:p-8 max-w-7xl mx-auto w-full">
+                    <nav className="p-6 space-y-3">
+                        {navItems.map((item) => (
+                            <button
+                                key={item.id}
+                                onClick={() => {
+                                    if (item.href) navigate(item.href);
+                                    else setActiveSection(item.id);
+                                }}
+                                className={`w-full flex items-center gap-4 px-6 py-4 rounded-xl text-left font-medium transition-all duration-300 ${activeSection === item.id
+                                        ? "bg-gradient-to-r from-orange-50 to-orange-100 text-orange-700 shadow-md border border-orange-200"
+                                        : "text-gray-700 hover:bg-gray-50"
+                                    }`}
+                            >
+                                {item.icon}
+                                <span>{item.label}</span>
+                            </button>
+                        ))}
+
+                        <button
+                            onClick={handleLogout}
+                            className="w-full flex items-center justify-center gap-3 mt-10 px-6 py-4 bg-gradient-to-r from-red-50 to-red-100 text-red-600 rounded-xl font-bold hover:from-red-100 hover:to-red-200 transition-all shadow-sm"
+                        >
+                            <LogOut size={20} />
+                            Logout
+                        </button>
+                    </nav>
+                </aside>
+
+                {/* Mobile Sidebar */}
+                <AnimatePresence>
+                    {isSidebarOpen && (
+                        <>
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setIsSidebarOpen(false)}
+                                className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+                            />
+                            <motion.aside
+                                initial={{ x: -320 }}
+                                animate={{ x: 0 }}
+                                exit={{ x: -320 }}
+                                className="fixed left-0 top-0 h-full w-80 bg-white shadow-2xl z-50 lg:hidden overflow-y-auto"
+                            >
+                                <div className="p-6 border-b border-gray-100">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h2 className="text-xl font-bold text-gray-900">My Account</h2>
+                                        <button
+                                            onClick={() => setIsSidebarOpen(false)}
+                                            className="p-2 hover:bg-gray-100 rounded-full"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                    <div className="text-center">
+                                        {user?.avatar?.url ? (
+                                            <img src={user.avatar.url} alt={user.name} className="w-20 h-20 rounded-full mx-auto ring-4 ring-orange-200" />
+                                        ) : (
+                                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-white text-3xl font-bold flex items-center justify-center mx-auto ring-4 ring-orange-200">
+                                                {user?.name?.charAt(0).toUpperCase()}
+                                            </div>
+                                        )}
+                                        <h3 className="mt-4 font-bold text-gray-900">{user?.name}</h3>
+                                        <p className="text-sm text-gray-600">{user?.email}</p>
+                                        {isAdmin && <span className="mt-2 inline-block px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs">Admin</span>}
+                                    </div>
+                                </div>
+                                <nav className="p-4 space-y-2">
+                                    {navItems.map((item) => (
+                                        <button
+                                            key={item.id}
+                                            onClick={() => {
+                                                if (item.href) navigate(item.href);
+                                                else setActiveSection(item.id);
+                                                setIsSidebarOpen(false);
+                                            }}
+                                            className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl text-left font-medium ${activeSection === item.id
+                                                    ? "bg-orange-100 text-orange-700"
+                                                    : "text-gray-700 hover:bg-gray-50"
+                                                }`}
+                                        >
+                                            {item.icon}
+                                            <span>{item.label}</span>
+                                        </button>
+                                    ))}
+                                    <button
+                                        onClick={handleLogout}
+                                        className="w-full flex items-center gap-4 px-5 py-4 rounded-xl text-red-600 font-medium hover:bg-red-50"
+                                    >
+                                        <LogOut size={20} />
+                                        Logout
+                                    </button>
+                                </nav>
+                            </motion.aside>
+                        </>
+                    )}
+                </AnimatePresence>
+
+                {/* Main Content Area */}
+                <main className="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={activeSection}
-                            initial={{ opacity: 0, x: 20 }}
+                            initial={{ opacity: 0, x: 30 }}
                             animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.3 }}
-                            className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 lg:p-8 mb-20 lg:mb-0"
+                            exit={{ opacity: 0, x: -30 }}
+                            transition={{ duration: 0.4 }}
+                            className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 min-h-[70vh]"
                         >
+                            {/* Profile Settings */}
                             {activeSection === "profile" && <ProfileSettings />}
-                            {activeSection === "orders" && <OrdersSection />}
-                            {activeSection === "add-product" && isAdmin && <AddProduct />}
+
+                            {/* Orders Section */}
+                            {activeSection === "orders" && (
+                                <>
+                                    {isAdmin ? (
+                                        <AdminOrders /> 
+                                    ) : (
+                                    <UserOrdersPreview /> 
+                                    )}
+                                </>
+                            )}
+
+                            {/* Admin Dashboard */}
                             {activeSection === "admin" && isAdmin && <AdminOverview />}
                         </motion.div>
                     </AnimatePresence>
                 </main>
             </div>
 
-            <MobileTabs />
+            {/* Mobile Bottom Navigation */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 shadow-2xl z-40">
+                <div className="flex justify-around py-3">
+                    <button
+                        onClick={() => setIsSidebarOpen(true)}
+                        className="flex flex-col items-center text-gray-700"
+                    >
+                        <User size={24} />
+                        <span className="text-xs mt-1">Account</span>
+                    </button>
+                    <button
+                        onClick={() => setActiveSection("orders")}
+                        className={`flex flex-col items-center ${activeSection === "orders" ? "text-orange-600" : "text-gray-700"}`}
+                    >
+                        <ShoppingBag size={24} />
+                        <span className="text-xs mt-1">Orders</span>
+                    </button>
+                    <button
+                        onClick={handleLogout}
+                        className="flex flex-col items-center text-red-600"
+                    >
+                        <LogOut size={24} />
+                        <span className="text-xs mt-1">Logout</span>
+                    </button>
+                </div>
+            </div>
         </div>
     );
 };
-
-// Helper Components
-const UserAvatar = ({ user, small = false }) => {
-    const letter = user?.name?.charAt(0).toUpperCase() || "U";
-    return (
-        <motion.div
-            whileHover={{ scale: 1.1 }}
-            className={`${small ? 'w-14 h-14 text-2xl' : 'w-24 h-24 text-4xl'} rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-bold shadow-lg ring-2 ring-orange-300`}
-        >
-            {letter}
-        </motion.div>
-    );
-};
-
-const NavItem = ({ icon, label, active, onClick }) => (
-    <motion.button
-        whileHover={{ x: 5, scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={onClick}
-        className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl text-left font-medium transition-all ${active
-            ? "bg-gradient-to-r from-orange-50 to-orange-100 text-orange-700 border border-orange-300 shadow-sm"
-            : "text-gray-700 hover:bg-gray-50"
-            }`}
-    >
-        {icon}
-        <span>{label}</span>
-    </motion.button>
-);
 
 export default Profile;
