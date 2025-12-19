@@ -127,9 +127,9 @@ const Profile = () => {
                                         ₹{order.totalPrice.toLocaleString('en-IN')}
                                     </p>
                                     <span className={`mt-2 inline-block px-4 py-1.5 rounded-full text-xs font-semibold ${order.orderStatus === "Delivered" ? "bg-green-100 text-green-700" :
-                                            order.orderStatus === "Cancelled" ? "bg-red-100 text-red-700" :
-                                                order.orderStatus === "Shipped" ? "bg-blue-100 text-blue-700" :
-                                                    "bg-yellow-100 text-yellow-700"
+                                        order.orderStatus === "Cancelled" ? "bg-red-100 text-red-700" :
+                                            order.orderStatus === "Shipped" ? "bg-blue-100 text-blue-700" :
+                                                "bg-yellow-100 text-yellow-700"
                                         }`}>
                                         {order.orderStatus}
                                     </span>
@@ -148,7 +148,7 @@ const Profile = () => {
             <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => navigate("/orders")}
+                onClick={() => navigate("/profile/orders")}
                 className="w-full py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition"
             >
                 View All My Orders →
@@ -211,8 +211,8 @@ const Profile = () => {
                                     else setActiveSection(item.id);
                                 }}
                                 className={`w-full flex items-center gap-4 px-6 py-4 rounded-xl text-left font-medium transition-all duration-300 ${activeSection === item.id
-                                        ? "bg-gradient-to-r from-orange-50 to-orange-100 text-orange-700 shadow-md border border-orange-200"
-                                        : "text-gray-700 hover:bg-gray-50"
+                                    ? "bg-gradient-to-r from-orange-50 to-orange-100 text-orange-700 shadow-md border border-orange-200"
+                                    : "text-gray-700 hover:bg-gray-50"
                                     }`}
                             >
                                 {item.icon}
@@ -280,8 +280,8 @@ const Profile = () => {
                                                 setIsSidebarOpen(false);
                                             }}
                                             className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl text-left font-medium ${activeSection === item.id
-                                                    ? "bg-orange-100 text-orange-700"
-                                                    : "text-gray-700 hover:bg-gray-50"
+                                                ? "bg-orange-100 text-orange-700"
+                                                : "text-gray-700 hover:bg-gray-50"
                                                 }`}
                                         >
                                             {item.icon}
@@ -319,9 +319,9 @@ const Profile = () => {
                             {activeSection === "orders" && (
                                 <>
                                     {isAdmin ? (
-                                        <AdminOrders /> 
+                                        <AdminOrders />
                                     ) : (
-                                    <UserOrdersPreview /> 
+                                        <UserOrdersPreview />
                                     )}
                                 </>
                             )}

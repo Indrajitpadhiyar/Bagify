@@ -14,7 +14,7 @@ import {
   userDetailsReducer,
   userMutationReducer,
 } from "./redux/reducer/user.Reducer";
-import { myOrdersReducer, createOrderReducer, orderDetailsReducer, allOrdersReducer } from "./redux/reducer/order.Reducer";
+import { myOrdersReducer, createOrderReducer, orderDetailsReducer, allOrdersReducer, orderReducer } from "./redux/reducer/order.Reducer";
 import wishlistReducer from "./redux/slices/wishlistSlice";
 import { newReviewReducer } from "./redux/reducer/review.Reducer";
 import { createAddProductReducer } from "./redux/reducer/addProduct.Reducer";
@@ -41,6 +41,7 @@ const reducer = combineReducers({
   userDetails: userDetailsReducer,
   userMutation: userMutationReducer,
   allOrders: allOrdersReducer,
+  order: orderReducer,
 });
 
 let initialState = {
