@@ -12,45 +12,63 @@ import errorMiddlewares from "./src/middlewares/error.middlewares.js";
 const app = express();
 
 // Body parsers
+
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 
-// ⭐ REQUIRED for Cloudinary avatar upload
+// Cloudinary file upload
+
 app.use(
   fileUpload({
     useTempFiles: true,
     tempFileDir: os.tmpdir(),
   })
 );
+// CORS (VERY IMPORTANT)
 
 const allowedOrigins = [
   "http://localhost:5173",
+  "http://127.0.0.1:5173",
   "https://bagify-z9wj.onrender.com",
 ];
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: function (origin, callback) {
+      // allow requests with no origin (postman, mobile apps)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
-    methods: "GET,POST,PUT,DELETE",
-    allowedHeaders: "Content-Type,Authorization",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
-// Serve multer uploads
+// Static files
+
 app.use("/uploads", express.static("uploads"));
 
 // Routes
+
 app.use("/api/v1", product);
 app.use("/api/v1", userRouter);
 app.use("/api/v1", orderRouter);
 
-// Error handler
-app.use(errorMiddlewares);
+// Test route
 
 app.get("/", (req, res) => {
   res.send("<h1>Bagify API is running!</h1>");
 });
+
+// Error middleware (LAST)
+
+app.use(errorMiddlewares);
 
 export default app;

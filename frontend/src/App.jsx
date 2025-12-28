@@ -10,6 +10,7 @@ import LoginSignUp from './components/pages/LoginSignUp';
 import Profile from './components/pages/Profile';
 import Cart from './components/pages/Cart';
 import Wishlist from './components/pages/Wishlist';
+import PageNotFound from './components/PageNotFound';
 import HotDeals from './components/pages/HotDeals';
 import MyOrder from './components/pages/MyOrder';
 import AdminOverview from './components/admin/AdminOverview';
@@ -58,6 +59,8 @@ const App = () => {
           <Route path="/admin/order/:id" element={<AdminOrderDetails />} />
           <Route path="/admin/users" element={<UsersList />} />
         </Route>
+
+        <Route path="*" element={<PageNotFound />} />
       </Routes>
     </Router>
   );
