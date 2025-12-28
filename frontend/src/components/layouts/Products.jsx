@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { getProduct } from '../../redux/actions/product.Action';
@@ -66,15 +67,15 @@ const Products = () => {
 
                 {/* VIEW ALL BUTTON */}
                 <div className="text-center mt-12">
-                    <motion.a
-                        href="/products"
+                    <Link
+                        to={"/products"}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         className="inline-flex items-center space-x-2 px-8 py-4 bg-orange-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all"
                     >
                         <span>View All Products</span>
                         <ChevronRight className="h-5 w-5" />
-                    </motion.a>
+                    </Link>
                 </div>
             </div>
         </section>
