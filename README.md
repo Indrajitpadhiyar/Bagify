@@ -61,7 +61,7 @@ npm run dev
 
 👨‍💻 Developer
 
-Nikunj Solanki
+Indrajit Padhiyar
 📧 Email: indrajitpadhiyar107@gmail.com
 
 🌐 Portfolio: Coming Soon
