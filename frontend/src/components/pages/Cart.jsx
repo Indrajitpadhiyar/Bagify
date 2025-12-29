@@ -1,4 +1,6 @@
 import Footer from '../ui/Footer';
+import { useSelector, useDispatch } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 const Cart = () => {
     const { cartItems } = useSelector((state) => state.cart);
