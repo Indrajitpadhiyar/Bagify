@@ -19,7 +19,7 @@ import NewProduct from './components/admin/AddProduct';
 import AdminOrders from "./components/admin/AdminOrders";
 import AdminOrderDetails from "./components/admin/AdminOrderDetails";
 import UsersList from './components/admin/UsersList';
-// import ForgotPassword from './components/pages/ForgotPassword';
+import ForgotPassword from './components/pages/ForgotPassword';
 import ResetPassword from './components/pages/ResetPassword';
 import ProtectedRoute from './components/routes/ProtectedRoute';
 
@@ -47,7 +47,7 @@ const App = () => {
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/deals" element={<HotDeals />} />
         <Route path="/profile/orders" element={<MyOrder />} />
-        {/* <Route path="/password/forgot" element={<ForgotPassword />} /> */}
+        <Route path="/password/forgot" element={<ForgotPassword />} />
 
         <Route path="/password/reset/:token" element={<ResetPassword />} />
 

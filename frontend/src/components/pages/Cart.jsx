@@ -1,6 +1,14 @@
+import React from 'react';
+import Navbar from '../ui/Navbar';
 import Footer from '../ui/Footer';
+import CheckoutButton from '../layouts/CheckoutButton';
 import { useSelector, useDispatch } from 'react-redux';
+import { addToCart, removeFromCart } from '../../redux/slices/cartSlice';
+// eslint-disable-next-line no-unused-vars
+import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
+import { Minus, Plus, Trash2 } from 'lucide-react';
 
 const Cart = () => {
     const { cartItems } = useSelector((state) => state.cart);
