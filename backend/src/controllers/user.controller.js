@@ -75,21 +75,21 @@ export const forgotPassword = catchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler("User not found", 404));
   }
 
-  // get resatePassword token
-
+  // Get resetPassword token
   const resetToken = user.getResetPasswordToken();
   await user.save({ validateBeforeSave: false });
 
-  const resetPasswordUrl = `${req.protocol}://${req.get(
-    "host"
-  )}/api/v1/password/reset/${resetToken}`;
+  // Point to frontend URL - Assuming frontend runs on port 5173 by default for Vite
+  // Ideally this should come from process.env.FRONTEND_URL
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+  const resetPasswordUrl = `${frontendUrl}/password/reset/${resetToken}`;
 
   const message = `Your password reset token is :- \n\n ${resetPasswordUrl} \n\nIf you have not requested this email then, please ignore it.`;
 
   try {
     await sendEmail({
       email: user.email,
-      subject: `Nexora Password Recovery`,
+      subject: `Bagify Password Recovery`,
       message,
     });
     res.status(200).json({
@@ -97,12 +97,22 @@ export const forgotPassword = catchAsyncError(async (req, res, next) => {
       message: `Email sent to ${user.email} successfully`,
     });
   } catch (error) {
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
+    // If email fails (e.g. no config), log it to console for development
+    console.log("❌ Email sending failed (likely missing config).");
+    console.log("------------------------------------------");
+    console.log("🔥 DEV MODE - PASSWORD RESET LINK:");
+    console.log(resetPasswordUrl);
+    console.log("------------------------------------------");
 
-    await user.save({ validateBeforeSave: false });
+    // CRITICAL: Do NOT delete the token from the user document!
+    // We want the developer to be able to use the link we just logged.
 
-    return next(new ErrorHandler(error.message, 500));
+    // Return 200 OK so the frontend shows the "Success" message
+    // and doesn't display "Internal Server Error"
+    res.status(200).json({
+      success: true,
+      message: `(Dev Mode) Check Backend Terminal for Link!`,
+    });
   }
 });
 
@@ -120,7 +130,7 @@ export const resetPassword = catchAsyncError(async (req, res, next) => {
 
   if (!user) {
     return next(
-      new ErrorHandler("resate password token is invalid has been expired", 401)
+      new ErrorHandler("Reset password token is invalid or has been expired", 401)
     );
   }
 

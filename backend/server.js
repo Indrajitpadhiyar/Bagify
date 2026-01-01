@@ -1,5 +1,7 @@
 // server.js
 import "dotenv/config";
+console.log("🔍 Server Start - ENV Check:");
+console.log("   Strict SMTP:", process.env.SMPT_SERVICE);
 import http from "http";
 import { Server } from "socket.io";
 import cloudinary from "cloudinary";
