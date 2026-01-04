@@ -45,6 +45,8 @@ const userSchema = new mongoose.Schema({
     country: { type: String, default: "India" },
     pinCode: { type: Number },
     phoneNo: { type: Number },
+    landmark: { type: String },
+    area: { type: String },
   },
   addToCart: [
     {

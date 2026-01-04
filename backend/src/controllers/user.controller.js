@@ -197,6 +197,8 @@ export const updateProfile = catchAsyncError(async (req, res, next) => {
       country: req.body.country || "India",
       pinCode: req.body.pinCode,
       phoneNo: req.body.phoneNo,
+      landmark: req.body.landmark,
+      area: req.body.area,
     },
   };
 

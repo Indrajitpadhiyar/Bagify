@@ -17,6 +17,8 @@ const ProfileSettings = () => {
     const [state, setState] = useState("");
     const [pinCode, setPinCode] = useState("");
     const [phoneNo, setPhoneNo] = useState("");
+    const [landmark, setLandmark] = useState("");
+    const [area, setArea] = useState("");
     const [avatarPreview, setAvatarPreview] = useState("");
     const [avatarFile, setAvatarFile] = useState(null);
     const fileInputRef = useRef(null);
@@ -30,6 +32,8 @@ const ProfileSettings = () => {
             setState(user.shippingInfo?.state || "");
             setPinCode(user.shippingInfo?.pinCode || "");
             setPhoneNo(user.shippingInfo?.phoneNo || "");
+            setLandmark(user.shippingInfo?.landmark || "");
+            setArea(user.shippingInfo?.area || "");
             setAvatarPreview(user.avatar?.url || "");
         }
     }, [user]);
@@ -73,6 +77,8 @@ const ProfileSettings = () => {
         if (state) formData.append("state", state);
         if (pinCode) formData.append("pinCode", pinCode);
         if (phoneNo) formData.append("phoneNo", phoneNo);
+        if (landmark) formData.append("landmark", landmark);
+        if (area) formData.append("area", area);
         formData.append("country", "India");
         if (avatarFile) formData.append("avatar", avatarFile);
 
@@ -102,6 +108,8 @@ const ProfileSettings = () => {
             setState(user.shippingInfo?.state || "");
             setPinCode(user.shippingInfo?.pinCode || "");
             setPhoneNo(user.shippingInfo?.phoneNo || "");
+            setLandmark(user.shippingInfo?.landmark || "");
+            setArea(user.shippingInfo?.area || "");
             setAvatarPreview(user.avatar?.url || "");
         }
         setAvatarFile(null);
@@ -227,6 +235,22 @@ const ProfileSettings = () => {
                         label: "Address",
                         value: address,
                         set: setAddress,
+                        type: "text",
+                        icon: <MapPin size={18} />,
+                        fullWidth: true
+                    },
+                    {
+                        label: "Area / Street / Sector",
+                        value: area,
+                        set: setArea,
+                        type: "text",
+                        icon: <MapPin size={18} />,
+                        fullWidth: true
+                    },
+                    {
+                        label: "Landmark",
+                        value: landmark,
+                        set: setLandmark,
                         type: "text",
                         icon: <MapPin size={18} />,
                         fullWidth: true

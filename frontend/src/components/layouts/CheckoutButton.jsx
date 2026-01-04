@@ -64,13 +64,7 @@ const AddressModal = ({ isOpen, onClose, onSave, currentAddress }) => {
                             onChange={(e) => setAddress({ ...address, flat: e.target.value })}
                             className="w-full p-3 border rounded-xl text-sm focus:border-orange-500 outline-none"
                         />
-                        <input
-                            type="text"
-                            placeholder="Area, Street, Sector *"
-                            value={address.area}
-                            onChange={(e) => setAddress({ ...address, area: e.target.value })}
-                            className="w-full p-3 border rounded-xl text-sm focus:border-orange-500 outline-none"
-                        />
+
                         <input
                             type="text"
                             placeholder="Landmark (Optional)"
@@ -128,14 +122,14 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess, overrideCartItems })
 
     // Default Address from your data
     const defaultAddress = {
-        name: "User", // You can set from user.name if available
-        phone: user?.shippingInfo?.phoneNo || "12345671234",
-        flat: user?.shippingInfo?.address || "Tavra",
-        area: "",
-        landmark: "",
-        city: user?.shippingInfo?.city || "Bharuch",
-        pincode: user?.shippingInfo?.pinCode || "392011",
-        state: user?.shippingInfo?.state || "Gujarat",
+        name: user?.name || "User",
+        phone: user?.shippingInfo?.phoneNo || "",
+        flat: user?.shippingInfo?.address || "",
+        area: user?.shippingInfo?.area || "", // Added Area
+        landmark: user?.shippingInfo?.landmark || "", // Added Landmark
+        city: user?.shippingInfo?.city || "",
+        pincode: user?.shippingInfo?.pinCode || "",
+        state: user?.shippingInfo?.state || "",
     };
 
     const [address, setAddress] = useState(defaultAddress);
@@ -152,7 +146,7 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess, overrideCartItems })
     const handlePlaceOrder = () => {
         if (cartItems.length === 0) return toast.error("No items to checkout");
 
-        const required = ['name', 'phone', 'flat', 'area', 'city', 'pincode'];
+        const required = ['name', 'phone', 'flat', 'city', 'pincode'];
         const missing = required.filter(field => !address[field]);
 
         if (missing.length > 0) {
@@ -162,7 +156,7 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess, overrideCartItems })
 
         const orderData = {
             shippingInfo: {
-                address: `${address.flat}, ${address.area}${address.landmark ? ", " + address.landmark : ""}`,
+                address: `${address.flat}${address.landmark ? ", " + address.landmark : ""}`,
                 city: address.city,
                 state: address.state,
                 pinCode: address.pincode,
@@ -224,37 +218,56 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess, overrideCartItems })
                             </h2>
                         </div>
 
-                        <div className="p-5 space-y-4 max-h-96 overflow-y-auto">
+                        <div className="p-5 space-y-4 max-h-[75vh] overflow-y-auto no-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                            <style>{`
+                                .no-scrollbar::-webkit-scrollbar {
+                                    display: none;
+                                }
+                            `}</style>
                             {/* Address Summary */}
-                            <div className="bg-orange-50 p-4 rounded-xl border border-orange-200">
+                            <div className="bg-orange-50 p-4 rounded-xl border border-orange-200 shadow-sm">
                                 <div className="flex items-center justify-between mb-2">
                                     <p className="font-semibold text-sm text-orange-800 flex items-center gap-2">
                                         <MapPin className="w-4 h-4" /> Delivery Address
                                     </p>
                                     <button
                                         onClick={handleEditAddress}
-                                        className="text-xs text-orange-600 underline flex items-center gap-1 hover:text-orange-700"
+                                        className="text-xs text-orange-600 underline flex items-center gap-1 hover:text-orange-700 font-medium"
                                     >
                                         <Edit2 className="w-3 h-3" /> Edit
                                     </button>
                                 </div>
-                                <p className="text-sm font-medium">{address.name}, {address.phone}</p>
-                                <p className="text-xs text-gray-600">
-                                    {address.flat}, {address.area}{address.landmark ? ", " + address.landmark : ""}, {address.city}, {address.state} - {address.pincode}
+                                <p className="text-sm font-bold text-gray-800">{address.name} <span className="text-gray-500 font-normal">| {address.phone}</span></p>
+                                <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                                    {[
+                                        address.flat,
+                                        address.landmark,
+                                        address.city,
+                                        address.state
+                                    ].filter(Boolean).join(", ")}
+                                    {address.pincode ? ` - ${address.pincode}` : ""}
                                 </p>
                             </div>
 
                             {/* Cart Items */}
-                            {cartItems.map((item) => (
-                                <div key={item._id} className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl">
-                                    <img src={item.image} alt={item.name} className="w-14 h-14 object-cover rounded-lg" />
-                                    <div className="flex-1">
-                                        <p className="font-medium text-sm truncate">{item.name}</p>
-                                        <p className="text-xs text-gray-500">₹{item.price} × {item.qty}</p>
+                            <div className="space-y-3">
+                                {cartItems.map((item) => (
+                                    <div key={item._id} className="flex gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100 shadow-sm">
+                                        <div className="w-16 h-16 flex-shrink-0 bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                            <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
+                                        </div>
+                                        <div className="flex-1 flex flex-col justify-between">
+                                            <p className="font-medium text-sm text-gray-800 line-clamp-2 leading-tight" title={item.name}>
+                                                {item.name}
+                                            </p>
+                                            <div className="flex items-center justify-between mt-2">
+                                                <p className="text-xs text-gray-500">Qty: {item.qty}</p>
+                                                <p className="font-bold text-orange-600">₹{(item.price * item.qty).toLocaleString()}</p>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <p className="font-bold text-orange-600">₹{(item.price * item.qty).toLocaleString()}</p>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
 
                             <div className="border-t pt-3 flex justify-between font-bold text-lg">
                                 <span>Total</span>
