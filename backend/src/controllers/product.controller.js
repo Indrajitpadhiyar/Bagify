@@ -9,9 +9,9 @@ import cloudinary from "cloudinary";
 
 export const createProduct = async (req, res) => {
   try {
-    const { name, price, description, category, stock } = req.body;
+    const { name, price, originalPrice, description, category, stock } = req.body;
 
-    if (!name || !price || !description || !category || !stock) {
+    if (!name || !price || !originalPrice || !description || !category || !stock) {
       return res.status(400).json({
         success: false,
         message: "Please provide all required fields",
@@ -51,6 +51,7 @@ export const createProduct = async (req, res) => {
     const product = await Product.create({
       name,
       price: Number(price),
+      originalPrice: Number(originalPrice),
       description,
       category,
       stock: Number(stock) || 1,

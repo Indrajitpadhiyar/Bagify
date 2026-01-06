@@ -14,6 +14,23 @@ const HotDeals = () => {
     const { loading, error, products } = useSelector((state) => state.allProduct || {});
 
     const [activeCategory, setActiveCategory] = useState('All');
+    const [bannerConfig, setBannerConfig] = useState(null);
+
+    // Fetch banner config
+    useEffect(() => {
+        const fetchBanner = async () => {
+            try {
+                const response = await fetch('http://localhost:4000/api/v1/config/banner');
+                const data = await response.json();
+                if (data.success) {
+                    setBannerConfig(data.config);
+                }
+            } catch (error) {
+                console.error("Failed to fetch banner config");
+            }
+        };
+        fetchBanner();
+    }, []);
 
     // Fetch products on mount
     useEffect(() => {
@@ -104,12 +121,14 @@ const HotDeals = () => {
                             <Flame className="w-5 h-5" />
                             <span className="font-bold">Hot Deals</span>
                         </motion.div>
-                        <h1 className="text-5xl md:text-6xl font-bold mb-4">Grab These Before They're Gone!</h1>
+                        <h1 className="text-5xl md:text-6xl font-bold mb-4">
+                            {bannerConfig?.bannerTitle || "Summer Sale is Live!"}
+                        </h1>
                         <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
-                            Limited time offers on trending products. Shop now and save up to 50%!
+                            {bannerConfig?.bannerSubtitle || "Grab These Before They're Gone!"}
                         </p>
                         <Link
-                            to="/products"
+                            to={bannerConfig?.bannerLink || "/products"}
                             className="inline-flex items-center gap-3 bg-white text-orange-600 px-8 py-4 rounded-full font-bold text-lg shadow-2xl hover:shadow-orange-500/25 transition-all"
                         >
                             <Zap className="w-5 h-5" />
@@ -189,6 +208,7 @@ const HotDeals = () => {
                                                 _id={product._id}
                                                 name={product.name}
                                                 price={product.price}
+                                                originalPrice={product.originalPrice}
                                                 images={product.images}
                                                 stock={product.countInStock}
                                                 ratings={product.ratings}

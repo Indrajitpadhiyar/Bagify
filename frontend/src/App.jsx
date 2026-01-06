@@ -19,6 +19,7 @@ import NewProduct from './components/admin/AddProduct';
 import AdminOrders from "./components/admin/AdminOrders";
 import AdminOrderDetails from "./components/admin/AdminOrderDetails";
 import UsersList from './components/admin/UsersList';
+import BannerConfig from './components/admin/BannerConfig';
 import ForgotPassword from './components/pages/ForgotPassword';
 import ResetPassword from './components/pages/ResetPassword';
 import ProtectedRoute from './components/routes/ProtectedRoute';
@@ -58,6 +59,7 @@ const App = () => {
           <Route path="/admin/orders" element={<AdminOrders />} />
           <Route path="/admin/order/:id" element={<AdminOrderDetails />} />
           <Route path="/admin/users" element={<UsersList />} />
+          <Route path="/admin/banner" element={<BannerConfig />} />
         </Route>
 
         <Route path="*" element={<PageNotFound />} />

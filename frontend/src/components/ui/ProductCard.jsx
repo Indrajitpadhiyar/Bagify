@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 const ProductCard = ({
     _id,
     name,
+    originalPrice,
     price,
     images = [],
     stock = 0,
@@ -110,9 +111,21 @@ const ProductCard = ({
                         <span className="text-xs text-gray-500 ml-1">({numOfReviews})</span>
                     </div>
 
-                    <span className="text-2xl font-bold text-orange-600">
-                        ₹{Number(price).toLocaleString('en-IN')}
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <span className="text-2xl font-bold text-orange-600">
+                            ₹{Number(price).toLocaleString('en-IN')}
+                        </span>
+                        {originalPrice && Number(originalPrice) > Number(price) && (
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-sm text-gray-400 line-through">
+                                    ₹{Number(originalPrice).toLocaleString('en-IN')}
+                                </span>
+                                <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                                    {Math.round(((originalPrice - price) / originalPrice) * 100)}% OFF
+                                </span>
+                            </div>
+                        )}
+                    </div>
 
                     {stock <= 0 && <p className="text-sm text-red-600 font-medium">Out of Stock</p>}
 

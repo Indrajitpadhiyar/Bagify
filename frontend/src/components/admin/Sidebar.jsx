@@ -20,7 +20,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         { name: 'All Products', path: '/admin/products', icon: <ShoppingBag /> },
         { name: 'Add Product', path: '/admin/product/new', icon: <PlusCircle /> },
         { name: 'Users', path: '/admin/users', icon: <Users /> },
-        // { name: 'Reviews', path: '/admin/reviews', icon: <Star /> },
+        { name: 'Banner', path: '/admin/banner', icon: <Star /> },
     ];
 
     const sidebarVariants = {

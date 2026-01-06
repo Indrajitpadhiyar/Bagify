@@ -7,6 +7,7 @@ import os from "os";
 import product from "./src/routes/product.routes.js";
 import userRouter from "./src/routes/user.routes.js";
 import orderRouter from "./src/routes/order.routes.js";
+import configRouter from "./src/routes/config.routes.js";
 import errorMiddlewares from "./src/middlewares/error.middlewares.js";
 
 const app = express();
@@ -60,6 +61,7 @@ app.use("/uploads", express.static("uploads"));
 app.use("/api/v1", product);
 app.use("/api/v1", userRouter);
 app.use("/api/v1", orderRouter);
+app.use("/api/v1", configRouter);
 
 // Test route
 

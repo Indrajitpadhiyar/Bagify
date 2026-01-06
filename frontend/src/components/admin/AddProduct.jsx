@@ -14,8 +14,9 @@ const AddProduct = () => {
   const [formData, setFormData] = useState({
     name: "",
     price: "",
+    originalPrice: "",
     description: "",
-    category: [], // ← Now an array for multiple categories
+    category: [],
     stock: "",
   });
 
@@ -108,7 +109,7 @@ const AddProduct = () => {
   };
 
   const resetForm = () => {
-    setFormData({ name: "", price: "", description: "", category: [], stock: "" });
+    setFormData({ name: "", price: "", originalPrice: "", description: "", category: [], stock: "" });
     setImages([]);
     setImagesPreview([]);
     if (imageInputRef.current) imageInputRef.current.value = "";
@@ -130,6 +131,7 @@ const AddProduct = () => {
     const productData = new FormData();
     productData.append("name", formData.name);
     productData.append("price", formData.price);
+    productData.append("originalPrice", formData.originalPrice);
     productData.append("description", formData.description);
     productData.append("stock", formData.stock || "1");
 
@@ -173,28 +175,60 @@ const AddProduct = () => {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
           <form onSubmit={submitHandler} encType="multipart/form-data" className="space-y-6">
 
-            {/* Name & Price */}
+            {/* Name, Price & Original Price */}
             <div className="grid md:grid-cols-2 gap-6">
-              <input
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Product Name *"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none"
-                required
-              />
-              <input
-                name="price"
-                type="number"
-                min="0"
-                step="0.01"
-                value={formData.price}
-                onChange={handleChange}
-                placeholder="Price *"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none"
-                required
-              />
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Product Name *</label>
+                <input
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="e.g. Premium Leather Bag"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Actual Price (₹) *</label>
+                <input
+                  name="originalPrice"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.originalPrice}
+                  onChange={handleChange}
+                  placeholder="e.g. 2999"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Discounted Price (₹) *</label>
+                <input
+                  name="price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.price}
+                  onChange={handleChange}
+                  placeholder="e.g. 1499"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none"
+                  required
+                />
+              </div>
             </div>
+
+            {/* Discount Preview */}
+            {formData.originalPrice && formData.price && Number(formData.originalPrice) > Number(formData.price) && (
+              <div className="bg-green-50 text-green-700 px-4 py-3 rounded-xl border border-green-200 flex items-center gap-2">
+                <span className="font-bold">
+                  {Math.round(((formData.originalPrice - formData.price) / formData.originalPrice) * 100)}% OFF
+                </span>
+                <span className="text-sm">Great deal! This will appear in Hot Deals if &gt; 30% off.</span>
+              </div>
+            )}
 
             {/* Multiple Category Select */}
             <div>
