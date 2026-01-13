@@ -98,7 +98,7 @@ export const forgotPassword = catchAsyncError(async (req, res, next) => {
     });
   } catch (error) {
     // If email fails (e.g. no config), log it to console for development
-    console.log("❌ Email sending failed (likely missing config).");
+    console.log("❌ Email sending failed:", error);
     console.log("------------------------------------------");
     console.log("🔥 DEV MODE - PASSWORD RESET LINK:");
     console.log(resetPasswordUrl);
