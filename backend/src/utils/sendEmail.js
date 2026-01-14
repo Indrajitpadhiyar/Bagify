@@ -16,7 +16,7 @@ const sendEmail = async (options) => {
     },
   });
   const mailOptions = {
-    from: process.env.SMTP_MAIL,
+    from: "Bagify <" + process.env.SMTP_MAIL + ">",
     to: options.email,
     subject: options.subject,
     text: options.message,
