@@ -4,6 +4,7 @@ import ErrorHandler from "../utils/error.handler.js";
 import catchAsyncError from "../middlewares/catchAysncerror.middleware.js";
 import sendToken from "../utils/JWTtoken.js";
 import sendEmail from "../utils/sendEmail.js";
+import nodeMailer from "nodemailer";
 import cloudinary from "cloudinary";
 
 cloudinary.config({
@@ -87,11 +88,23 @@ export const forgotPassword = catchAsyncError(async (req, res, next) => {
   const message = `Your password reset token is :- \n\n ${resetPasswordUrl} \n\nIf you have not requested this email then, please ignore it.`;
 
   try {
-    await sendEmail({
+    const info = await sendEmail({
       email: user.email,
       subject: `Bagify Password Recovery`,
       message,
     });
+
+    console.log("------------------------------------------");
+    console.log("✅ Email sent successfully to:", user.email);
+    console.log("🔗 Reset Link (for Devs):", resetPasswordUrl);
+
+    // Log Ethereal URL if available
+    const previewUrl = nodeMailer.getTestMessageUrl(info);
+    if (previewUrl) {
+      console.log("📧 Ethereal Preview URL:", previewUrl);
+    }
+    console.log("------------------------------------------");
+
     res.status(200).json({
       success: true,
       message: `Email sent to ${user.email} successfully`,
