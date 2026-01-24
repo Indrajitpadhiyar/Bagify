@@ -1,16 +1,15 @@
 // server.js
 import "dotenv/config";
-console.log("🔍 Server Start - ENV Check:");
-console.log("   Strict SMTP:", process.env.SMPT_SERVICE);
 import http from "http";
 import { Server } from "socket.io";
 import cloudinary from "cloudinary";
-
 import app from "./app.js";
 import connectDB from "./src/config/db.js";
+import dns from "node:dns";
 
 const PORT = process.env.PORT || 4000;
 
+dns.setServers(["1.1.1.1"]);
 // 🔹 Cloudinary Config
 cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_NAME,
@@ -19,6 +18,8 @@ cloudinary.v2.config({
 });
 
 // 🔹 DB Connect
+
+console.log("Mongo URI exists:", !!process.env.MONGO_URI);
 connectDB();
 
 // 🔹 HTTP Server
