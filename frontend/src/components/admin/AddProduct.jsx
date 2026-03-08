@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addProductReset } from "../../redux/actions/addProduct.Action";
+import { addProduct, addProductReset } from "../../redux/actions/addProduct.Action";
 import toast from "react-hot-toast";
 import { Upload, X } from "lucide-react";
 import AdminLayout from "./AdminLayout";
@@ -146,22 +146,10 @@ const AddProduct = () => {
     });
 
     try {
-      setLoading(true);
-
-      // Let the browser/axios set Content-Type (with boundary) automatically
-      const response = await API.post("/products/create", productData);
-
-      if (response.data.success) {
-        toast.success("Product Created Successfully!");
-        resetForm();
-      }
+      // Use Redux action
+      dispatch(addProduct(productData));
     } catch (err) {
       console.error("Product creation error:", err);
-      toast.error(
-        err.response?.data?.message || "Failed to create product. Please try again."
-      );
-    } finally {
-      setLoading(false);
     }
   };
 

@@ -4,57 +4,149 @@ import catchAsyncError from "../middlewares/catchAysncerror.middleware.js";
 import ApiFeatures from "../utils/apiFeatures.js";
 
 import cloudinary from "cloudinary";
+import fs from "fs";
+import path from "path";
+
 
 //create product-admin
 
 export const createProduct = async (req, res) => {
   try {
+    // Debug: inspect incoming payload (helps when using Postman / non-multipart requests)
+    console.log("createProduct req.body:", req.body);
+    console.log("createProduct req.files:", req.files);
+
     const { name, price, originalPrice, description, category, stock } = req.body;
 
-    if (!name || !price || !originalPrice || !description || !category || !stock) {
+    const isEmptyValue = (value) =>
+      value === undefined ||
+      value === null ||
+      (typeof value === "string" && value.trim() === "") ||
+      (Array.isArray(value) && value.length === 0);
+
+    // Accept 0 as a valid numeric value (e.g. price or stock) but reject empty strings/arrays
+    if (
+      isEmptyValue(name) ||
+      isEmptyValue(price) ||
+      isEmptyValue(description) ||
+      isEmptyValue(category) ||
+      isEmptyValue(stock)
+    ) {
       return res.status(400).json({
         success: false,
         message: "Please provide all required fields",
       });
     }
 
-    if (!req.files || req.files.length === 0) {
+    // If originalPrice is missing, default it to price so the product still creates
+    const originalPriceValue = isEmptyValue(originalPrice) ? price : originalPrice;
+
+    // Accept pre-uploaded images in JSON payload (e.g. Postman testing) or uploaded files
+    let imagesLinks = [];
+
+    if (req.body.images && Array.isArray(req.body.images) && req.body.images.length) {
+      imagesLinks = req.body.images
+        .map((img) => {
+          if (!img) return null;
+          if (typeof img === "string") {
+            return { public_id: "", url: img };
+          }
+          return {
+            public_id: img.public_id || "",
+            url: img.url || img.secure_url || "",
+          };
+        })
+        .filter((img) => img && img.url);
+    }
+
+    // Handle images from express-fileupload
+    if ((!imagesLinks || imagesLinks.length === 0) && req.files && req.files.images) {
+      const images = Array.isArray(req.files.images)
+        ? req.files.images
+        : [req.files.images];
+
+      const canUseCloudinary =
+        process.env.CLOUDINARY_NAME &&
+        process.env.CLOUDINARY_API_KEY &&
+        process.env.CLOUDINARY_API_SECRET;
+
+      // Ensure local upload directory exists (fallback storage)
+      const uploadDir = path.join(process.cwd(), "uploads", "products");
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+
+      for (let i = 0; i < images.length; i++) {
+        const file = images[i];
+
+        const storeLocally = async () => {
+          const ext = path.extname(file.name) || ".jpg";
+          const fileName = `${Date.now()}-${i}${ext}`;
+          const destPath = path.join(uploadDir, fileName);
+
+          // Rename may fail across devices (EXDEV). Copy + remove is safer.
+          try {
+            await fs.promises.rename(file.tempFilePath, destPath);
+          } catch (err) {
+            if (err.code === "EXDEV") {
+              await fs.promises.copyFile(file.tempFilePath, destPath);
+              await fs.promises.unlink(file.tempFilePath);
+            } else {
+              throw err;
+            }
+          }
+
+          const host = req.get("host");
+          const protocol = req.protocol;
+          imagesLinks.push({
+            public_id: fileName,
+            url: `${protocol}://${host}/uploads/products/${fileName}`,
+          });
+        };
+
+        if (canUseCloudinary) {
+          try {
+            const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
+              folder: "products",
+            });
+
+            imagesLinks.push({
+              public_id: result.public_id,
+              url: result.secure_url,
+            });
+            continue;
+          } catch (err) {
+            console.warn(
+              "Cloudinary upload failed, falling back to local storage:",
+              err.message || err
+            );
+            await storeLocally();
+            continue;
+          }
+        }
+
+        // If Cloudinary is not configured, store locally
+        await storeLocally();
+      }
+    }
+
+    if (!imagesLinks || imagesLinks.length === 0) {
       return res.status(400).json({
         success: false,
         message: "Please upload at least one image",
       });
     }
 
-    let imagesLinks = [];
-
-    // Handle images from express-fileupload
-    if (req.files && req.files.images) {
-      const images = Array.isArray(req.files.images)
-        ? req.files.images
-        : [req.files.images];
-
-      for (let i = 0; i < images.length; i++) {
-        const result = await cloudinary.v2.uploader.upload(
-          images[i].tempFilePath,
-          {
-            folder: "products",
-          }
-        );
-
-        imagesLinks.push({
-          public_id: result.public_id,
-          url: result.secure_url,
-        });
-      }
-    }
+    const categoryValues = Array.isArray(category) ? category : [category];
+    const stockValue = Number(stock);
 
     const product = await Product.create({
       name,
       price: Number(price),
-      originalPrice: Number(originalPrice),
+      originalPrice: Number(originalPriceValue),
       description,
-      category,
-      stock: Number(stock) || 1,
+      category: categoryValues,
+      stock: Number.isNaN(stockValue) ? 1 : stockValue,
       images: imagesLinks,
       user: req.user._id,
       seller: req.user._id,
@@ -69,10 +161,16 @@ export const createProduct = async (req, res) => {
     });
   } catch (error) {
     console.error("Create Product Error:", error);
-    return res.status(500).json({
+
+    // Convert common validation errors to client errors
+    const statusCode =
+      error.name === "ValidationError" || error.name === "CastError" ? 400 : 500;
+
+    return res.status(statusCode).json({
       success: false,
-      message: "Server Error",
-      error: error.message,
+      message: error.message || "Server Error",
+      error: error.name,
+      detail: error.errors || error.error?.message || error.message,
     });
   }
 };

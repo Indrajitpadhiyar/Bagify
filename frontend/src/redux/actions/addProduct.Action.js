@@ -6,16 +6,26 @@ import {
   ADD_PRODUCT_RESET,
 } from "../constans/addProduct.Constans";
 
-export const addProduct = (formData, token) => async (dispatch) => {
+export const addProduct = (formData) => async (dispatch) => {
   try {
     dispatch({ type: ADD_PRODUCT_REQUEST });
 
+    const token = localStorage.getItem("token");
+    if (!token) {
+      const message = "Please login to add a product";
+      console.error("Add product failed - no token:", message);
+      dispatch({ type: ADD_PRODUCT_FAIL, payload: message });
+      return;
+    }
+
     const config = {
       headers: {
-        Authorization: `${token}`,
+        Authorization: `Bearer ${token}`,
       },
+      withCredentials: true,
     };
-    console.log("Config headers:", config.headers);
+
+    console.log("Add Product: sending request with token", token);
 
     // Do not set Content-Type manually — let the browser set multipart boundary
     const { data } = await API.post("/products/create", formData, config);
@@ -26,9 +36,10 @@ export const addProduct = (formData, token) => async (dispatch) => {
       payload: data,
     });
   } catch (error) {
+    console.error("Add product error:", error.response?.data || error.message);
     dispatch({
       type: ADD_PRODUCT_FAIL,
-      payload: error.response.data.message,
+      payload: error.response?.data?.message || "Server Error",
     });
   }
 };

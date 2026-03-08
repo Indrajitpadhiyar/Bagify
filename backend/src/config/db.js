@@ -1,12 +1,19 @@
 // src/config/db.js
-import { MongoClient, ServerApiVersion } from "mongodb";
+import mongoose from "mongoose";
 
 const connectDB = async () => {
+  if (!process.env.MONGO_URI) {
+    console.error("❌ MONGO_URI is not defined. Set it in your environment variables.");
+    process.exit(1);
+  }
+
   try {
-    const client = new MongoClient(process.env.MONGO_URI, {
-      serverApi: ServerApiVersion.v1,
+    mongoose.set("strictQuery", false);
+
+    await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 10000,
     });
-    await client.connect();
+
     console.log("✅ MongoDB Connected Successfully");
   } catch (error) {
     console.error("❌ MongoDB Connection Error:", error.message);

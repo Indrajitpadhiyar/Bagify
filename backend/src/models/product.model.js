@@ -37,8 +37,14 @@ const productSchema = new mongoose.Schema({
     },
   ],
   category: {
-    type: String,
+    type: [String],
     required: [true, "Product category is required"],
+    validate: {
+      validator: function (val) {
+        return Array.isArray(val) ? val.length > 0 : !!val;
+      },
+      message: "Please select at least one category",
+    },
   },
   stock: {
     type: Number,

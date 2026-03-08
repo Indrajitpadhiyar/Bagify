@@ -7,11 +7,7 @@ import sendEmail from "../utils/sendEmail.js";
 import nodeMailer from "nodemailer";
 import cloudinary from "cloudinary";
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+// Cloudinary config is now handled globally in server.js
 
 // Register a user
 

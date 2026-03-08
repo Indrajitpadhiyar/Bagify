@@ -29,8 +29,13 @@ export default (err, req, res, next) => {
     err = new ErrorHandler(message, 400)
   }
 
+  if (err.statusCode === 500) {
+    console.error("🔥 INTERNAL SERVER ERROR:", err);
+  }
+
   res.status(err.statusCode).json({
     success: false,
     message: err.message,
+    // stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
   });
 };

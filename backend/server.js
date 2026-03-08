@@ -20,7 +20,7 @@ cloudinary.v2.config({
 // 🔹 DB Connect
 
 console.log("Mongo URI exists:", !!process.env.MONGO_URI);
-connectDB();
+await connectDB();
 
 // 🔹 HTTP Server
 const server = http.createServer(app);
