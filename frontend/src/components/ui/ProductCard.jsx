@@ -94,6 +94,10 @@ const ProductCard = ({
                     <motion.img
                         src={imageUrl}
                         alt={name}
+                        loading="lazy"
+                        onError={(e) => {
+                            e.currentTarget.src = 'https://via.placeholder.com/300x300/eee/aaa?text=No+Image';
+                        }}
                         className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
                     />
                 </div>

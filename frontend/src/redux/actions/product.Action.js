@@ -16,11 +16,11 @@ import {
   CLEAR_ERRORS,
 } from "../constans/product.Constans";
 
-export const getProduct = () => async (dispatch) => {
+export const getProduct = (query = "") => async (dispatch) => {
   try {
     dispatch({ type: ALL_PRODUCT_REQUEST });
 
-    let link = `/products`;
+    const link = `/products${query}`;
 
     const { data } = await API.get(link);
 

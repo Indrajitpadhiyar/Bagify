@@ -11,7 +11,9 @@ import Loading from '../ui/Loading';
 
 const AllProducts = () => {
     const dispatch = useDispatch();
-    const { loading, error, products } = useSelector((state) => state.products);
+    const { loading, error, products, filteredProductsCount, resultsPerPage } = useSelector(
+        (state) => state.products
+    );
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [filters, setFilters] = useState({
@@ -23,39 +25,39 @@ const AllProducts = () => {
     });
     const [sortBy, setSortBy] = useState('featured');
     const [currentPage, setCurrentPage] = useState(1);
-    const [productsPerPage] = useState(12);
+
+    // Use server-side pagination when available (fallback to 12)
+    const productsPerPage = resultsPerPage || 12;
 
     // Fetch products from Redux
     useEffect(() => {
+        dispatch(getProduct(`?page=${currentPage}&limit=${productsPerPage}`));
+    }, [dispatch, currentPage, productsPerPage]);
+
+    useEffect(() => {
         if (error) {
             toast.error(error);
-        } else {
-            dispatch(getProduct());
         }
-    }, [dispatch, error,]);
+    }, [error]);
 
-    // Filter products based on active filters
-    const filteredProducts = Array.isArray(products) ? products.filter(product => {
-        // Price filter
-        if (product.price < filters.priceRange[0] || product.price > filters.priceRange[1]) {
-            return false;
-        }
+    // Filter products based on active filters (applies within current page)
+    const filteredProducts = Array.isArray(products)
+        ? products.filter((product) => {
+              if (product.price < filters.priceRange[0] || product.price > filters.priceRange[1]) {
+                  return false;
+              }
+              if (filters.categories.length > 0 && product.category && !filters.categories.includes(product.category)) {
+                  return false;
+              }
+              if (filters.brands.length > 0 && product.brand && !filters.brands.includes(product.brand)) {
+                  return false;
+              }
+              return true;
+          })
+        : [];
 
-        // Category filter
-        if (filters.categories.length > 0 && product.category && !filters.categories.includes(product.category)) {
-            return false;
-        }
-
-        // Brand filter
-        if (filters.brands.length > 0 && product.brand && !filters.brands.includes(product.brand)) {
-            return false;
-        }
-
-        return true;
-    }) : [];
-
-    // Sort products
-    const sortedProducts = [...filteredProducts].sort((a, b) => {
+    // Sort products locally (for the current page)
+    const sortedProducts = filteredProducts.sort((a, b) => {
         switch (sortBy) {
             case 'price-low':
                 return a.price - b.price;
@@ -70,14 +72,14 @@ const AllProducts = () => {
         }
     });
 
-    // Pagination
-    const totalPages = Math.ceil(sortedProducts.length / productsPerPage);
-    const startIndex = (currentPage - 1) * productsPerPage;
-    const endIndex = startIndex + productsPerPage;
-    const currentProducts = sortedProducts.slice(startIndex, endIndex);
+    // Server-side pagination metadata (fallback to client-side count)
+    const totalItems = filteredProductsCount ?? products.length;
+    const totalPages = Math.ceil(totalItems / productsPerPage);
+    const displayStartIndex = (currentPage - 1) * productsPerPage + 1;
+    const displayEndIndex = displayStartIndex + sortedProducts.length - 1;
 
-    const displayStartIndex = startIndex + 1;
-    const displayEndIndex = Math.min(endIndex, sortedProducts.length);
+    // Use the data already fetched from the server as the current page
+    const currentProducts = sortedProducts;
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
@@ -134,7 +136,7 @@ const AllProducts = () => {
                                     <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-1">All Products</h1>
                                     {!loading && sortedProducts.length > 0 && (
                                         <p className="text-gray-600 text-sm">
-                                            Showing {displayStartIndex}-{displayEndIndex} of {sortedProducts.length} products
+                                            Showing {displayStartIndex}-{displayEndIndex} of {totalItems} products
                                         </p>
                                     )}
                                 </div>

@@ -42,7 +42,6 @@ const LoginSignUp = () => {
     // Redirect if user is already logged in
     useEffect(() => {
         if (isAuthenticated) {
-            toast.error("You are already logged in!");
             navigate("/profile");
         }
     }, [isAuthenticated, navigate]);
@@ -114,11 +113,14 @@ const LoginSignUp = () => {
 
         try {
             await dispatch(register(formData));
-            toast.success("Account created! Please login.");
+            // Form reset after successful register
             setIsExpanded(false);
-            // Clear form
-            setSignupName(""); setSignupEmail(""); setSignupPassword(""); setConfirmPassword("");
-            setAvatarFile(null); setImagePreview(null);
+            setSignupName("");
+            setSignupEmail("");
+            setSignupPassword("");
+            setConfirmPassword("");
+            setAvatarFile(null);
+            setImagePreview(null);
         } catch {
             toast.error("Registration failed");
         } finally {

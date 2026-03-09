@@ -22,54 +22,97 @@ cloudinary.v2.config({
 console.log("Mongo URI exists:", !!process.env.MONGO_URI);
 await connectDB();
 
-// 🔹 HTTP Server
-const server = http.createServer(app);
+// 🔹 Server + Socket.IO helpers
+let httpServer;
+let io;
 
-// 🔹 Socket.IO Setup
-const io = new Server(server, {
-  cors: {
-    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  },
-  transports: ["websocket", "polling"],
-});
+const createServerAndSockets = () => {
+  httpServer = http.createServer(app);
+
+  io = new Server(httpServer, {
+    cors: {
+      origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+      methods: ["GET", "POST", "PUT", "DELETE"],
+      credentials: true,
+    },
+    transports: ["websocket", "polling"],
+  });
+
+  // 🔹 Socket Events
+  io.on("connection", (socket) => {
+    console.log("🟢 New Client Connected:", socket.id);
+
+    socket.on("join_order", (orderId) => {
+      socket.join(orderId);
+      console.log(`📦 Socket ${socket.id} joined room: ${orderId}`);
+    });
+
+    socket.on("disconnect", () => {
+      console.log("🔴 Client Disconnected:", socket.id);
+    });
+  });
+};
 
 export { io };
 
-// 🔹 Socket Events
-io.on("connection", (socket) => {
-  console.log("🟢 New Client Connected:", socket.id);
+// 🔹 Start Server (with port conflict handling)
+const defaultPort = Number(process.env.PORT) || 4000;
+let portToUse = defaultPort;
+const maxPortAttempts = 5;
+let attemptCount = 0;
 
-  socket.on("join_order", (orderId) => {
-    socket.join(orderId);
-    console.log(`📦 Socket ${socket.id} joined room: ${orderId}`);
+const startServer = () => {
+  if (attemptCount >= maxPortAttempts) {
+    console.error(
+      `🚫 Unable to start server after ${maxPortAttempts} attempts. Please free up port ${defaultPort} or set PORT in .env.`
+    );
+    process.exit(1);
+  }
+
+  attemptCount += 1;
+
+  // Create fresh server/socket instance for this attempt
+  createServerAndSockets();
+
+  httpServer.listen(portToUse, () => {
+    console.log(`🚀 Server running on http://localhost:${portToUse}`);
   });
 
-  socket.on("disconnect", () => {
-    console.log("🔴 Client Disconnected:", socket.id);
+  httpServer.on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+      console.warn(`⚠️ Port ${portToUse} is already in use. Trying port ${portToUse + 1}...`);
+      portToUse += 1;
+      // Close the previous server before retrying
+      httpServer.close(() => startServer());
+    } else {
+      console.error("Server error:", err);
+      process.exit(1);
+    }
   });
-});
+};
 
-// 🔹 Start Server
-const httpServer = server.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+startServer();
 
 // 🔹 Graceful Shutdown
-process.on("SIGINT", () => {
-  console.log("SIGINT received - shutting down");
-  httpServer.close(() => process.exit(0));
-});
+const shutdown = (signal) => {
+  console.log(`${signal} received - shutting down`);
+  if (httpServer) {
+    httpServer.close(() => process.exit(0));
+  } else {
+    process.exit(0);
+  }
+};
 
-process.on("SIGTERM", () => {
-  console.log("SIGTERM received - shutting down");
-  httpServer.close(() => process.exit(0));
-});
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
 
 process.on("unhandledRejection", (err) => {
   console.error("Unhandled Rejection:", err);
-  httpServer.close(() => process.exit(1));
+  if (httpServer) {
+    httpServer.close(() => process.exit(1));
+  } else {
+    process.exit(1);
+  }
 });
 
 process.on("uncaughtException", (err) => {

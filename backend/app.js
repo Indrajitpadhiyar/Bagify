@@ -37,10 +37,13 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
-      // allow requests with no origin (postman, mobile apps)
+      // allow requests with no origin (Postman, mobile apps, server-to-server)
       if (!origin) return callback(null, true);
 
-      if (allowedOrigins.includes(origin) || process.env.NODE_ENV === "development") {
+      // Allow any localhost origin when in development
+      const isLocalhost = /https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+
+      if (allowedOrigins.includes(origin) || (process.env.NODE_ENV === "development" && isLocalhost)) {
         callback(null, true);
       } else {
         console.error(`CORS blocked for origin: ${origin}`);
