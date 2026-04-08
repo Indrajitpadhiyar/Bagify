@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { loadUser } from './redux/actions/user.Action';
@@ -13,19 +13,33 @@ import Wishlist from './components/pages/Wishlist';
 import PageNotFound from './components/PageNotFound';
 import HotDeals from './components/pages/HotDeals';
 import MyOrder from './components/pages/MyOrder';
-import AdminOverview from './components/admin/AdminOverview';
-import ProductList from './components/admin/ProductList';
-import NewProduct from './components/admin/AddProduct';
-import AdminOrders from "./components/admin/AdminOrders";
-import AdminOrderDetails from "./components/admin/AdminOrderDetails";
-import UsersList from './components/admin/UsersList';
-import BannerConfig from './components/admin/BannerConfig';
 import ForgotPassword from './components/pages/ForgotPassword';
 import ResetPassword from './components/pages/ResetPassword';
 import ProtectedRoute from './components/routes/ProtectedRoute';
 
 
 import './App.css';
+
+const AdminOverview = lazy(() => import('./components/admin/AdminOverview'));
+const ProductList = lazy(() => import('./components/admin/ProductList'));
+const NewProduct = lazy(() => import('./components/admin/AddProduct'));
+const AdminOrders = lazy(() => import('./components/admin/AdminOrders'));
+const AdminOrderDetails = lazy(() => import('./components/admin/AdminOrderDetails'));
+const UsersList = lazy(() => import('./components/admin/UsersList'));
+const BannerConfig = lazy(() => import('./components/admin/BannerConfig'));
+
+const SuspendedRoute = ({ children }) => (
+  <Suspense
+    fallback={
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-white">
+        <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin" />
+        <span className="text-lg font-semibold text-orange-600">Loading admin panel...</span>
+      </div>
+    }
+  >
+    {children}
+  </Suspense>
+);
 
 const App = () => {
   const dispatch = useDispatch();
@@ -53,13 +67,62 @@ const App = () => {
         <Route path="/password/reset/:token" element={<ResetPassword />} />
 
         <Route element={<ProtectedRoute isAdmin={true} />}>
-          <Route path="/admin/dashboard" element={<AdminOverview />} />
-          <Route path="/admin/products" element={<ProductList />} />
-          <Route path="/admin/product/new" element={<NewProduct />} />
-          <Route path="/admin/orders" element={<AdminOrders />} />
-          <Route path="/admin/order/:id" element={<AdminOrderDetails />} />
-          <Route path="/admin/users" element={<UsersList />} />
-          <Route path="/admin/banner" element={<BannerConfig />} />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <SuspendedRoute>
+                <AdminOverview />
+              </SuspendedRoute>
+            }
+          />
+          <Route
+            path="/admin/products"
+            element={
+              <SuspendedRoute>
+                <ProductList />
+              </SuspendedRoute>
+            }
+          />
+          <Route
+            path="/admin/product/new"
+            element={
+              <SuspendedRoute>
+                <NewProduct />
+              </SuspendedRoute>
+            }
+          />
+          <Route
+            path="/admin/orders"
+            element={
+              <SuspendedRoute>
+                <AdminOrders />
+              </SuspendedRoute>
+            }
+          />
+          <Route
+            path="/admin/order/:id"
+            element={
+              <SuspendedRoute>
+                <AdminOrderDetails />
+              </SuspendedRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <SuspendedRoute>
+                <UsersList />
+              </SuspendedRoute>
+            }
+          />
+          <Route
+            path="/admin/banner"
+            element={
+              <SuspendedRoute>
+                <BannerConfig />
+              </SuspendedRoute>
+            }
+          />
         </Route>
 
         <Route path="*" element={<PageNotFound />} />
