@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { getAdminProducts, deleteProduct, clearErrors } from '../../redux/actions/product.Action';
 import { DELETE_PRODUCT_RESET } from '../../redux/constans/product.Constans';
@@ -12,6 +12,7 @@ import ConfirmDialog from '../ui/ConfirmDialog';
 
 const ProductList = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const { error, products, loading } = useSelector(state => state.products);
     const { error: deleteError, isDeleted } = useSelector(state => state.productMutation);
@@ -62,18 +63,21 @@ const ProductList = () => {
     return (
         <AdminLayout>
             {/* Header */}
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8 relative z-0">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-800">All Products</h1>
                     <p className="text-gray-500 mt-1">Manage your store's inventory</p>
                 </div>
-                <Link
-                    to="/admin/product/new"
-                    className="flex items-center gap-2 bg-gradient-to-r from-orange-600 to-amber-600 text-white px-6 py-3 rounded-xl hover:shadow-lg hover:scale-105 transition-all font-medium"
+                <motion.button
+                    type="button"
+                    onClick={() => navigate('/admin/product/new')}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center gap-2 bg-gradient-to-r from-orange-600 to-amber-600 text-white px-6 py-3 rounded-xl hover:shadow-lg hover:scale-105 transition-all font-medium relative z-20 cursor-pointer shadow-xl"
                 >
                     <Plus size={20} />
                     Add New Product
-                </Link>
+                </motion.button>
             </div>
 
             {/* Search & Filter Bar */}

@@ -9,7 +9,7 @@ import API from "../../api/axiosClient";
 
 const AddProduct = () => {
   const dispatch = useDispatch();
-  const { success, error } = useSelector((state) => state.addProduct);
+  const { loading, success, error } = useSelector((state) => state.addProduct);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -22,7 +22,6 @@ const AddProduct = () => {
 
   const [images, setImages] = useState([]);
   const [imagesPreview, setImagesPreview] = useState([]);
-  const [loading, setLoading] = useState(false);
 
   const imageInputRef = useRef(null);
 
@@ -155,6 +154,15 @@ const AddProduct = () => {
 
   return (
     <AdminLayout>
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white px-8 py-6 rounded-3xl shadow-2xl flex flex-col items-center gap-3">
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border-4 border-orange-200 border-t-orange-500 animate-spin" />
+            <p className="text-lg font-semibold text-gray-800">Adding product...</p>
+            <p className="text-sm text-gray-500">This may take a few seconds.</p>
+          </div>
+        </div>
+      )}
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-800 mb-6">
           Add New Product
@@ -328,7 +336,14 @@ const AddProduct = () => {
               disabled={loading}
               className="w-full py-4 bg-gradient-to-r from-orange-600 to-amber-600 text-white font-bold rounded-xl shadow-lg shadow-orange-200 hover:shadow-xl hover:translate-y-[-2px] transition-all disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
             >
-              {loading ? "Creating..." : "Create Product"}
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  Adding product...
+                </span>
+              ) : (
+                "Add New Product"
+              )}
             </button>
           </form>
         </div>

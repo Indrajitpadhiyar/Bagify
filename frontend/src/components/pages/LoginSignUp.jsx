@@ -48,17 +48,19 @@ const LoginSignUp = () => {
 
     // Handle authentication errors
     useEffect(() => {
-        if (error) {
-            toast.error(error);
-            dispatch(clearErrors());
-            setLoading(false);
-        }
+    if (error) {
+        toast.error(error);
+        dispatch(clearErrors());
+        setLoading(false);
+        return;
+    }
 
-        if (isAuthenticated) {
-            toast.success(`Welcome back, ${user.name || user.email}!`);
-            navigate("/profile");
-        }
-    }, [dispatch, error, isAuthenticated, user, navigate]);
+    if (isAuthenticated) {
+        setLoading(false);
+        toast.success(`Welcome back, ${user.name || user.email}!`);
+        navigate("/profile");
+    }
+}, [dispatch, error, isAuthenticated, user, navigate]);
 
     // Handle Image Upload
     const handleImageChange = (file) => {
@@ -84,16 +86,10 @@ const LoginSignUp = () => {
     };
 
     // Login Handler
-    const handleLogin = async (e) => {
+    const handleLogin = (e) => {
         e.preventDefault();
         setLoading(true);
-
-        try {
-            await dispatch(login(loginEmail, loginPassword));
-        } catch {
-            toast.error("Login failed. Please try again.");
-            setLoading(false);
-        }
+        dispatch(login(loginEmail, loginPassword));
     };
 
     // Signup Handler
