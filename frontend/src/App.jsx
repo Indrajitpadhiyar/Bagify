@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { loadUser } from './redux/actions/user.Action';
+import BackButton from './components/ui/BackButton';
 import Home from './components/pages/Home';
 import AllProducts from './components/pages/AllProducts';
 import ProductDetails from './components/pages/ProductDetails';
@@ -51,6 +52,7 @@ const App = () => {
 
   return (
     <Router>
+      <BackButton />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<AllProducts />} />

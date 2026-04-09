@@ -19,6 +19,7 @@ import ProfileSettings from "../layouts/ProfileSettings";
 import AdminOverview from "../admin/AdminOverview";
 import AdminOrders from "../admin/AdminOrders"; // Full admin order management
 import toast from "react-hot-toast";
+import { hasCustomAvatar, getAvatarLetter, getAvatarColorClass } from "../../utils/avatar";
 
 const Profile = () => {
     const dispatch = useDispatch();
@@ -27,6 +28,10 @@ const Profile = () => {
     const { user, isAuthenticated, error } = useSelector((state) => state.user);
     const { loading: myOrdersLoading, orders: myOrders = [] } = useSelector((state) => state.myOrders || {});
     const { loading: allOrdersLoading, orders: allOrders = [] } = useSelector((state) => state.allOrders || {});
+
+    const userHasAvatar = hasCustomAvatar(user);
+    const avatarLetter = getAvatarLetter(user);
+    const avatarBgClass = getAvatarColorClass(user);
 
     const [activeSection, setActiveSection] = useState("profile");
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -182,15 +187,17 @@ const Profile = () => {
                 {/* Desktop Sidebar */}
                 <aside className="hidden lg:block w-80 bg-white shadow-2xl border-r border-gray-100 min-h-screen">
                     <div className="p-8 text-center border-b border-gray-100">
-                        {user?.avatar?.url ? (
+                        {userHasAvatar ? (
                             <img
                                 src={user.avatar.url}
                                 alt={user.name}
                                 className="w-28 h-28 rounded-full mx-auto object-cover ring-8 ring-orange-100 shadow-xl"
                             />
                         ) : (
-                            <div className="w-28 h-28 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-5xl font-bold mx-auto ring-8 ring-orange-100">
-                                {user?.name?.charAt(0).toUpperCase() || "U"}
+                            <div
+                                className={`w-28 h-28 rounded-full flex items-center justify-center text-white text-5xl font-bold mx-auto ring-8 ring-orange-100 shadow-xl ${avatarBgClass}`}
+                            >
+                                {avatarLetter}
                             </div>
                         )}
                         <h2 className="mt-6 text-2xl font-bold text-gray-900">{user?.name}</h2>
@@ -258,11 +265,11 @@ const Profile = () => {
                                         </button>
                                     </div>
                                     <div className="text-center">
-                                        {user?.avatar?.url ? (
+                                        {userHasAvatar ? (
                                             <img src={user.avatar.url} alt={user.name} className="w-20 h-20 rounded-full mx-auto ring-4 ring-orange-200" />
                                         ) : (
-                                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-white text-3xl font-bold flex items-center justify-center mx-auto ring-4 ring-orange-200">
-                                                {user?.name?.charAt(0).toUpperCase()}
+                                            <div className={`w-20 h-20 rounded-full text-white text-3xl font-bold flex items-center justify-center mx-auto ring-4 ring-orange-200 ${avatarBgClass}`}>
+                                                {avatarLetter}
                                             </div>
                                         )}
                                         <h3 className="mt-4 font-bold text-gray-900">{user?.name}</h3>

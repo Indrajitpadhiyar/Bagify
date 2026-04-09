@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Camera, Edit2, User, Mail, MapPin, Shield, Calendar, Phone, Check, X } from "lucide-react";
 import { updateUser, clearErrors, loadUser } from "../../redux/actions/user.Action";
 import toast from "react-hot-toast";
+import { hasCustomAvatar, getAvatarLetter, getAvatarColorClass } from "../../utils/avatar";
 
 const ProfileSettings = () => {
     const dispatch = useDispatch();
@@ -43,7 +44,7 @@ const ProfileSettings = () => {
             setLandmark(user.shippingInfo?.landmark || "");
             setArea(user.shippingInfo?.area || "");
             revokeAvatarObjectUrl();
-            setAvatarPreview(user.avatar?.url || "");
+            setAvatarPreview(hasCustomAvatar(user) ? user.avatar.url : "");
         }
     }, [user]);
 
@@ -131,7 +132,7 @@ const ProfileSettings = () => {
             setPhoneNo(user.shippingInfo?.phoneNo || "");
             setLandmark(user.shippingInfo?.landmark || "");
             setArea(user.shippingInfo?.area || "");
-            setAvatarPreview(user.avatar?.url || "");
+            setAvatarPreview(hasCustomAvatar(user) ? user.avatar.url : "");
         }
         setAvatarFile(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
@@ -437,7 +438,7 @@ const ProfileSettings = () => {
 
 /* Avatar Fallback Component */
 const UserAvatar = ({ user, size = "h-24 w-24", textSize = "text-3xl" }) => {
-    if (user?.avatar?.url) {
+    if (hasCustomAvatar(user)) {
         return (
             <img
                 src={user.avatar.url}
@@ -447,18 +448,8 @@ const UserAvatar = ({ user, size = "h-24 w-24", textSize = "text-3xl" }) => {
         );
     }
 
-    const letter = user?.name?.charAt(0).toUpperCase() || "U";
-    const colors = {
-        A: "bg-orange-500", B: "bg-amber-500", C: "bg-yellow-500", D: "bg-orange-600",
-        E: "bg-red-500", F: "bg-pink-500", G: "bg-rose-500", H: "bg-orange-400",
-        I: "bg-amber-600", J: "bg-yellow-600", K: "bg-orange-700", L: "bg-amber-700",
-        M: "bg-yellow-700", N: "bg-orange-300", O: "bg-amber-300", P: "bg-yellow-300",
-        Q: "bg-red-400", R: "bg-pink-400", S: "bg-rose-400", T: "bg-orange-200",
-        U: "bg-amber-200", V: "bg-yellow-200", W: "bg-orange-100", X: "bg-amber-100",
-        Y: "bg-yellow-100", Z: "bg-gray-400"
-    };
-
-    const bg = colors[letter] || "bg-orange-500";
+    const letter = getAvatarLetter(user);
+    const bg = getAvatarColorClass(user);
 
     return (
         <div className={`${size} ${bg} rounded-full flex items-center justify-center text-white font-bold ${textSize} shadow-lg ring-4 ring-orange-50 border-4 border-white`}>

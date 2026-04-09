@@ -7,6 +7,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import ProductCard from '../ui/ProductCard';
 import Loading from '../ui/Loading';
 
+const MotionLink = motion(Link);
+
 const Products = () => {
     const dispatch = useDispatch();
     const { loading, error, products } = useSelector((state) => state.products);
@@ -67,7 +69,7 @@ const Products = () => {
 
                 {/* VIEW ALL BUTTON */}
                 <div className="text-center mt-12">
-                    <Link
+                    <MotionLink
                         to={"/products"}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}

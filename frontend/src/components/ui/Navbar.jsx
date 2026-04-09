@@ -20,6 +20,7 @@ import {
 import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import { logout } from "../../redux/actions/user.Action";
+import { hasCustomAvatar, getAvatarLetter, getAvatarColorClass } from "../../utils/avatar";
 
 // Import the new cart component
 import CartButton from "./CartButton";
@@ -123,7 +124,7 @@ const SearchDropdown = ({
 };
 
 const UserAvatar = ({ user, size = "w-8 h-8", textSize = "text-sm" }) => {
-    if (user?.avatar?.url) {
+    if (hasCustomAvatar(user)) {
         return (
             <img
                 src={user.avatar.url}
@@ -133,49 +134,14 @@ const UserAvatar = ({ user, size = "w-8 h-8", textSize = "text-sm" }) => {
         );
     }
 
-    console.log("Generating avatar for user:", user);
-
-    const firstLetter = user?.name ? user.name.charAt(0).toUpperCase() : "U";
-
-    const getColorClass = (letter) => {
-        const colors = {
-            A: "bg-red-500",
-            B: "bg-blue-500",
-            C: "bg-green-500",
-            D: "bg-yellow-500",
-            E: "bg-purple-500",
-            F: "bg-pink-500",
-            G: "bg-indigo-500",
-            H: "bg-teal-500",
-            I: "bg-orange-500",
-            J: "bg-red-600",
-            K: "bg-blue-600",
-            L: "bg-green-600",
-            M: "bg-yellow-600",
-            N: "bg-purple-600",
-            O: "bg-pink-600",
-            P: "bg-indigo-600",
-            Q: "bg-teal-600",
-            R: "bg-orange-600",
-            S: "bg-red-400",
-            T: "bg-blue-400",
-            U: "bg-green-400",
-            V: "bg-yellow-400",
-            W: "bg-purple-400",
-            X: "bg-pink-400",
-            Y: "bg-indigo-400",
-            Z: "bg-teal-400",
-        };
-        return colors[letter] || "bg-gray-500";
-    };
-
-    const colorClass = getColorClass(firstLetter);
+    const letter = getAvatarLetter(user);
+    const colorClass = getAvatarColorClass(user);
 
     return (
         <div
             className={`${size} ${colorClass} rounded-full flex items-center justify-center text-white font-bold ${textSize} shadow-md`}
         >
-            {firstLetter}
+            {letter}
         </div>
     );
 };
