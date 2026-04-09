@@ -77,7 +77,7 @@ const Products = () => {
                     >
                         <span>View All Products</span>
                         <ChevronRight className="h-5 w-5" />
-                    </Link>
+                    </MotionLink>
                 </div>
             </div>
         </section>
