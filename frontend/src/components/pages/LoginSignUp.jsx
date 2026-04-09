@@ -237,7 +237,7 @@ const LoginSignUp = () => {
                                 Premium bags for every journey. Style meets comfort.
                             </p>
 
-                            <motion.div className="mt-6 flex gap-2 justify-center flex-wrap">
+                            <motion.div className="mt-6 flex gap-2 text-black text-stone-500 justify-center flex-wrap">
                                 {["Quality", "Style", "Comfort"].map((word, i) => (
                                     <motion.span
                                         key={word}

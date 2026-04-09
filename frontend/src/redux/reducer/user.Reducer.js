@@ -41,8 +41,8 @@ export const userReducer = (state = initialState, action) => {
   switch (action.type) {
     case USER_LOGIN_REQUEST:
     case USER_REGISTER_REQUEST:
-    case USER_UPDATE_REQUEST:
     case USER_LOAD_REQUEST:
+    case USER_UPDATE_REQUEST:
       return {
         ...state,
         loading: true,
@@ -51,8 +51,16 @@ export const userReducer = (state = initialState, action) => {
 
     case USER_LOGIN_SUCCESS:
     case USER_REGISTER_SUCCESS:
-    case USER_UPDATE_SUCCESS:
     case USER_LOAD_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        isAuthenticated: true,
+        user: action.payload,
+        error: null,
+      };
+
+    case USER_UPDATE_SUCCESS:
       return {
         ...state,
         loading: false,
@@ -63,13 +71,19 @@ export const userReducer = (state = initialState, action) => {
 
     case USER_LOGIN_FAIL:
     case USER_REGISTER_FAIL:
-    case USER_UPDATE_FAIL:
     case USER_LOAD_FAIL:
       return {
         ...state,
         loading: false,
         isAuthenticated: false,
         user: null,
+        error: action.payload,
+      };
+
+    case USER_UPDATE_FAIL:
+      return {
+        ...state,
+        loading: false,
         error: action.payload,
       };
 

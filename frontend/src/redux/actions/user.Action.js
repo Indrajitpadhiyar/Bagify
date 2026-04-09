@@ -43,6 +43,7 @@ export const loadUser = () => async (dispatch) => {
     });
 
     dispatch({ type: USER_LOAD_SUCCESS, payload: data.user });
+    return data;
   } catch (error) {
     // Don't remove token on load fail, just show error
     dispatch({

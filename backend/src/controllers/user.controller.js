@@ -191,72 +191,88 @@ export const updatePassword = catchAsyncError(async (req, res, next) => {
 
 //update profile
 
+
 export const updateProfile = catchAsyncError(async (req, res, next) => {
-  console.log("🔍 updateProfile called");
+  console.log("updateProfile called");
   console.log("  Body:", req.body);
   console.log("  Files:", req.files);
 
-  const newUserData = {
-    name: req.body.name,
-    email: req.body.email,
-    shippingInfo: {
-      address: req.body.address,
-      city: req.body.city,
-      state: req.body.state,
-      country: req.body.country || "India",
-      pinCode: req.body.pinCode,
-      phoneNo: req.body.phoneNo,
-      landmark: req.body.landmark,
-      area: req.body.area,
-    },
-  };
+  const user = await User.findById(req.user.id);
+  if (!user) {
+    return next(new ErrorHandler("User not found", 404));
+  }
 
-  // Handle Avatar (Fixed: use req.files.avatar for express-fileupload)
+  const updates = {};
+  if (req.body.name !== undefined) updates.name = req.body.name;
+  if (req.body.email !== undefined) updates.email = req.body.email;
+
+  const shippingFields = [
+    "address",
+    "city",
+    "state",
+    "country",
+    "pinCode",
+    "phoneNo",
+    "landmark",
+    "area",
+  ];
+
+  const shippingUpdates = {};
+  shippingFields.forEach((field) => {
+    if (req.body[field] !== undefined) {
+      shippingUpdates[field] = req.body[field];
+    }
+  });
+
+  if (Object.keys(shippingUpdates).length) {
+    updates.shippingInfo = {
+      ...(user.shippingInfo || {}),
+      ...shippingUpdates,
+    };
+  }
+
   if (req.files?.avatar) {
-    console.log("✅ Avatar file detected");
+    console.log("Avatar file detected");
     const avatarFile = req.files.avatar;
-    const user = await User.findById(req.user.id);
 
     if (user.avatar?.public_id && user.avatar.public_id !== "default") {
-      console.log("🗑️ Deleting old avatar");
+      console.log("Deleting old avatar");
       await cloudinary.v2.uploader.destroy(user.avatar.public_id);
     }
 
-    console.log("☁️ Uploading to Cloudinary...");
-    const result = await cloudinary.v2.uploader.upload(
-      avatarFile.tempFilePath,
-      {
-        folder: "avatars",
-        width: 150,
-        crop: "scale",
-      }
-    );
+    console.log("Uploading to Cloudinary...");
+    const result = await cloudinary.v2.uploader.upload(avatarFile.tempFilePath, {
+      folder: "avatars",
+      width: 150,
+      crop: "scale",
+    });
 
-    console.log("✅ Upload successful:", result.secure_url);
+    console.log("Upload successful:", result.secure_url);
 
-    newUserData.avatar = {
+    updates.avatar = {
       public_id: result.public_id,
       url: result.secure_url,
     };
   } else {
-    console.log("⚠️ No avatar file in request");
+    console.log("No avatar file in request");
   }
 
-  console.log("🔍 Updating user with dataaaaa:", newUserData);
+  console.log("Updating user with:", updates);
 
-  const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
+  const updatedUser = await User.findByIdAndUpdate(req.user.id, updates, {
     new: true,
     runValidators: true,
     useFindAndModify: false,
   });
 
-  console.log("✅ Profile updated successfully", user);
+  console.log("Profile updated successfully", updatedUser);
 
   res.status(200).json({
     success: true,
-    user,
+    user: updatedUser,
   });
 });
+
 // get all users (admin)
 export const getAllUsers = catchAsyncError(async (req, res, next) => {
   const users = await User.find();

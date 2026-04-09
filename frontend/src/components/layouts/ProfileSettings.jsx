@@ -22,6 +22,14 @@ const ProfileSettings = () => {
     const [avatarPreview, setAvatarPreview] = useState("");
     const [avatarFile, setAvatarFile] = useState(null);
     const fileInputRef = useRef(null);
+    const avatarObjectUrlRef = useRef("");
+
+    const revokeAvatarObjectUrl = () => {
+        if (avatarObjectUrlRef.current) {
+            URL.revokeObjectURL(avatarObjectUrlRef.current);
+            avatarObjectUrlRef.current = "";
+        }
+    };
 
     useEffect(() => {
         if (user) {
@@ -34,9 +42,16 @@ const ProfileSettings = () => {
             setPhoneNo(user.shippingInfo?.phoneNo || "");
             setLandmark(user.shippingInfo?.landmark || "");
             setArea(user.shippingInfo?.area || "");
+            revokeAvatarObjectUrl();
             setAvatarPreview(user.avatar?.url || "");
         }
     }, [user]);
+
+    useEffect(() => {
+        return () => {
+            revokeAvatarObjectUrl();
+        };
+    }, []);
 
     // Show toast for errors
     useEffect(() => {
@@ -60,9 +75,10 @@ const ProfileSettings = () => {
             return;
         }
 
-        const reader = new FileReader();
-        reader.onload = () => setAvatarPreview(reader.result);
-        reader.readAsDataURL(file);
+        revokeAvatarObjectUrl();
+        const objectUrl = URL.createObjectURL(file);
+        avatarObjectUrlRef.current = objectUrl;
+        setAvatarPreview(objectUrl);
         setAvatarFile(file);
     };
 
@@ -83,23 +99,28 @@ const ProfileSettings = () => {
         if (avatarFile) formData.append("avatar", avatarFile);
 
         try {
-            await dispatch(updateUser(formData));
+            const updatedData = await dispatch(updateUser(formData));
 
             toast.success("Profile updated successfully!");
 
-            // Force refresh user data + bust avatar cache
-            dispatch(loadUser());
-            setAvatarPreview(prev => prev + "?t=" + Date.now());
+            if (updatedData?.user?.avatar?.url) {
+                revokeAvatarObjectUrl();
+                setAvatarPreview(`${updatedData.user.avatar.url}?t=${Date.now()}`);
+            }
+
+            await dispatch(loadUser());
 
             setIsEditing(false);
             setAvatarFile(null);
             if (fileInputRef.current) fileInputRef.current.value = "";
-        } catch (err) {
+        } catch (error) {
+            console.error("Profile update failed:", error);
             toast.error("Failed to update profile");
         }
     };
 
     const handleCancel = () => {
+        revokeAvatarObjectUrl();
         if (user) {
             setName(user.name || "");
             setEmail(user.email || "");
@@ -174,33 +195,46 @@ const ProfileSettings = () => {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 className="absolute inset-0 bg-black bg-opacity-40 rounded-full flex items-center justify-center"
-                            >
-                                <span className="text-white text-sm font-medium">Change Photo</span>
-                            </motion.div>
-                        )}
-                    </motion.div>
+                        >
+                            <span className="text-white text-sm font-medium">Change Photo</span>
+                        </motion.div>
+                    )}
+                </motion.div>
 
-                    <AnimatePresence>
-                        {isEditing && (
-                            <motion.label
-                                initial={{ scale: 0, rotate: -180 }}
-                                animate={{ scale: 1, rotate: 0 }}
-                                exit={{ scale: 0, rotate: 180 }}
-                                htmlFor="avatar-upload"
-                                className="absolute bottom-0 right-0 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg hover:from-orange-600 hover:to-orange-700 transition-all duration-200"
-                            >
-                                <Camera size={20} />
-                                <input
-                                    id="avatar-upload"
-                                    type="file"
-                                    accept="image/*"
-                                    className="hidden"
-                                    ref={fileInputRef}
-                                    onChange={handleAvatarChange}
-                                />
-                            </motion.label>
-                        )}
-                    </AnimatePresence>
+                <AnimatePresence>
+                    {isEditing && avatarFile && (
+                        <motion.span
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 8 }}
+                            className="absolute -top-3 right-0 rounded-full bg-gradient-to-r from-green-500 to-teal-500 text-white px-3 py-1 text-xs font-semibold shadow-xl"
+                        >
+                            Preview ready
+                        </motion.span>
+                    )}
+                </AnimatePresence>
+
+                <AnimatePresence>
+                    {isEditing && (
+                        <motion.label
+                            initial={{ scale: 0, rotate: -180 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            exit={{ scale: 0, rotate: 180 }}
+                            htmlFor="avatar-upload"
+                            className="absolute bottom-0 right-0 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg hover:from-orange-600 hover:to-orange-700 transition-all duration-200"
+                        >
+                            <Camera size={20} />
+                            <input
+                                id="avatar-upload"
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                ref={fileInputRef}
+                                onChange={handleAvatarChange}
+                            />
+                        </motion.label>
+                    )}
+                </AnimatePresence>
                 </div>
             </div>
 
