@@ -6,7 +6,7 @@ import {
     PlusCircle,
     Users,
     Star,
-    LogOut,
+    Sparkles,
     X
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -18,9 +18,13 @@ const Sidebar = ({ isOpen, onClose }) => {
         { name: 'Dashboard', path: '/admin/dashboard', icon: <LayoutDashboard /> },
         { name: 'Orders', path: '/admin/orders', icon: <ShoppingBag /> },
         { name: 'All Products', path: '/admin/products', icon: <ShoppingBag /> },
-        { name: 'Add Product', path: '/admin/product/new', icon: <PlusCircle /> },
         { name: 'Users', path: '/admin/users', icon: <Users /> },
         { name: 'Banner', path: '/admin/banner', icon: <Star /> },
+    ];
+
+    const quickAddItems = [
+        { name: 'Add Product', path: '/admin/product/new', icon: <PlusCircle /> },
+        { name: 'Add Sell Offer', path: '/admin/sell', icon: <Sparkles /> },
     ];
 
     const sidebarVariants = {
@@ -84,6 +88,37 @@ const Sidebar = ({ isOpen, onClose }) => {
                         );
                     })}
                 </nav>
+
+                {/* Quick access section for adding new items */}
+                <div className="mt-8 px-4 space-y-2">
+                    <p className="text-xs uppercase tracking-[0.3em] text-orange-500">Quick Add</p>
+                    {quickAddItems.map((item) => {
+                        const isActive = location.pathname === item.path;
+                        return (
+                            <Link
+                                key={item.path}
+                                to={item.path}
+                                onClick={() => onClose && onClose()}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group
+                  ${isActive
+                                            ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-200'
+                                            : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600'
+                                        }`}
+                            >
+                                <span className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
+                                    {item.icon}
+                                </span>
+                                <span className="font-medium">{item.name}</span>
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="activeIndicator"
+                                        className="ml-auto w-1.5 h-1.5 rounded-full bg-white"
+                                    />
+                                )}
+                            </Link>
+                        );
+                    })}
+                </div>
 
                 {/* Footer actions? */}
                 <div className="absolute bottom-8 left-0 w-full px-4">

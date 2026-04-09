@@ -20,10 +20,12 @@ import ProtectedRoute from './components/routes/ProtectedRoute';
 
 
 import './App.css';
+import AdminLayout from './components/admin/AdminLayout';
 
 const AdminOverview = lazy(() => import('./components/admin/AdminOverview'));
 const ProductList = lazy(() => import('./components/admin/ProductList'));
 const NewProduct = lazy(() => import('./components/admin/AddProduct'));
+const AddSellOffer = lazy(() => import('./components/admin/AddSell'));
 const AdminOrders = lazy(() => import('./components/admin/AdminOrders'));
 const AdminOrderDetails = lazy(() => import('./components/admin/AdminOrderDetails'));
 const UsersList = lazy(() => import('./components/admin/UsersList'));
@@ -40,6 +42,12 @@ const SuspendedRoute = ({ children }) => (
   >
     {children}
   </Suspense>
+);
+
+const AdminRouteWrapper = ({ children }) => (
+  <SuspendedRoute>
+    <AdminLayout>{children}</AdminLayout>
+  </SuspendedRoute>
 );
 
 const App = () => {
@@ -69,62 +77,14 @@ const App = () => {
         <Route path="/password/reset/:token" element={<ResetPassword />} />
 
         <Route element={<ProtectedRoute isAdmin={true} />}>
-          <Route
-            path="/admin/dashboard"
-            element={
-              <SuspendedRoute>
-                <AdminOverview />
-              </SuspendedRoute>
-            }
-          />
-          <Route
-            path="/admin/products"
-            element={
-              <SuspendedRoute>
-                <ProductList />
-              </SuspendedRoute>
-            }
-          />
-          <Route
-            path="/admin/product/new"
-            element={
-              <SuspendedRoute>
-                <NewProduct />
-              </SuspendedRoute>
-            }
-          />
-          <Route
-            path="/admin/orders"
-            element={
-              <SuspendedRoute>
-                <AdminOrders />
-              </SuspendedRoute>
-            }
-          />
-          <Route
-            path="/admin/order/:id"
-            element={
-              <SuspendedRoute>
-                <AdminOrderDetails />
-              </SuspendedRoute>
-            }
-          />
-          <Route
-            path="/admin/users"
-            element={
-              <SuspendedRoute>
-                <UsersList />
-              </SuspendedRoute>
-            }
-          />
-          <Route
-            path="/admin/banner"
-            element={
-              <SuspendedRoute>
-                <BannerConfig />
-              </SuspendedRoute>
-            }
-          />
+          <Route path="/admin/dashboard" element={<AdminRouteWrapper><AdminOverview /></AdminRouteWrapper>} />
+          <Route path="/admin/products" element={<AdminRouteWrapper><ProductList /></AdminRouteWrapper>} />
+          <Route path="/admin/product/new" element={<AdminRouteWrapper><NewProduct /></AdminRouteWrapper>} />
+          <Route path="/admin/sell" element={<AdminRouteWrapper><AddSellOffer /></AdminRouteWrapper>} />
+          <Route path="/admin/orders" element={<AdminRouteWrapper><AdminOrders /></AdminRouteWrapper>} />
+          <Route path="/admin/order/:id" element={<AdminRouteWrapper><AdminOrderDetails /></AdminRouteWrapper>} />
+          <Route path="/admin/users" element={<AdminRouteWrapper><UsersList /></AdminRouteWrapper>} />
+          <Route path="/admin/banner" element={<AdminRouteWrapper><BannerConfig /></AdminRouteWrapper>} />
         </Route>
 
         <Route path="*" element={<PageNotFound />} />

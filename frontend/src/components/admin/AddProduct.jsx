@@ -7,7 +7,7 @@ import AdminLayout from "./AdminLayout";
 import Select from "react-select";
 import API from "../../api/axiosClient";
 
-const AddProduct = () => {
+const AddProduct = ({ hideLayout = false }) => {
   const dispatch = useDispatch();
   const { loading, success, error } = useSelector((state) => state.addProduct);
 
@@ -152,8 +152,8 @@ const AddProduct = () => {
     }
   };
 
-  return (
-    <AdminLayout>
+  const content = (
+    <>
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="bg-white px-8 py-6 rounded-3xl shadow-2xl flex flex-col items-center gap-3">
@@ -186,7 +186,7 @@ const AddProduct = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Actual Price (₹) *</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Actual Price (â‚¹) *</label>
                 <input
                   name="originalPrice"
                   type="number"
@@ -201,7 +201,7 @@ const AddProduct = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Discounted Price (₹) *</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Discounted Price (â‚¹) *</label>
                 <input
                   name="price"
                   type="number"
@@ -304,7 +304,7 @@ const AddProduct = () => {
               <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center gap-2">
                 <Upload className="w-10 h-10 text-orange-500" />
                 <span className="text-gray-600 font-medium">Click to upload product images</span>
-                <span className="text-xs text-gray-400">Max 5 images • JPG, PNG, WebP</span>
+                <span className="text-xs text-gray-400">Max 5 images â€¢ JPG, PNG, WebP</span>
               </label>
             </div>
 
@@ -348,8 +348,15 @@ const AddProduct = () => {
           </form>
         </div>
       </div>
+    </>
+  );
+
+  return hideLayout ? content : (
+    <AdminLayout>
+      {content}
     </AdminLayout>
   );
+
 };
 
 export default AddProduct;

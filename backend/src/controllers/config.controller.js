@@ -1,4 +1,4 @@
-import Config from "../models/config.model.js";
+import Config, { createDefaultHeroOffers } from "../models/config.model.js";
 import catchAsyncError from "../middlewares/catchAysncerror.middleware.js";
 
 // Get Banner Config (Public)
@@ -7,6 +7,11 @@ export const getBannerConfig = catchAsyncError(async (req, res, next) => {
 
     if (!config) {
         config = await Config.create({});
+    }
+
+    if (!config.heroOffers || !config.heroOffers.length) {
+        config.heroOffers = createDefaultHeroOffers();
+        await config.save();
     }
 
     res.status(200).json({

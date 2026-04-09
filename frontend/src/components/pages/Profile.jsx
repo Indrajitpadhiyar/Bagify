@@ -6,6 +6,8 @@ import {
     Home,
     User,
     ShoppingBag,
+    PlusCircle,
+    Sparkles,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +20,8 @@ import {
 import ProfileSettings from "../layouts/ProfileSettings";
 import AdminOverview from "../admin/AdminOverview";
 import AdminOrders from "../admin/AdminOrders"; // Full admin order management
+import AddProduct from "../admin/AddProduct";
+import AddSell from "../admin/AddSell";
 import toast from "react-hot-toast";
 import { hasCustomAvatar, getAvatarLetter, getAvatarColorClass } from "../../utils/avatar";
 
@@ -80,7 +84,11 @@ const Profile = () => {
             icon: <ShoppingBag size={20} />,
         },
         ...(isAdmin
-            ? [{ id: "admin", label: "Dashboard", icon: <Shield size={20} /> }]
+            ? [
+                { id: "admin", label: "Dashboard", icon: <Shield size={20} /> },
+                { id: "addProduct", label: "Add New Product", icon: <PlusCircle size={20} /> },
+                { id: "addSell", label: "Add Sell Offer", icon: <Sparkles size={20} /> },
+            ]
             : []),
     ];
 
@@ -335,6 +343,8 @@ const Profile = () => {
 
                             {/* Admin Dashboard */}
                             {activeSection === "admin" && isAdmin && <AdminOverview />}
+                            {activeSection === "addProduct" && isAdmin && <AddProduct hideLayout />}
+                            {activeSection === "addSell" && isAdmin && <AddSell hideLayout />}
                         </motion.div>
                     </AnimatePresence>
                 </main>
