@@ -78,6 +78,29 @@ const heroOfferSchema = new mongoose.Schema({
     },
 });
 
+const sellOfferSchema = new mongoose.Schema({
+    offerTitle: {
+        type: String,
+        trim: true,
+    },
+    productId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+        required: true,
+    },
+    originalPrice: Number,
+    sellPrice: Number,
+    quantity: Number,
+    discount: Number,
+    startDate: Date,
+    endDate: Date,
+    description: String,
+    isActive: {
+        type: Boolean,
+        default: true,
+    },
+});
+
 const configSchema = new mongoose.Schema({
     bannerTitle: {
         type: String,
@@ -97,7 +120,11 @@ const configSchema = new mongoose.Schema({
     },
     heroOffers: {
         type: [heroOfferSchema],
-        default: createDefaultHeroOffers,
+        default: [],
+    },
+    sellOffers: {
+        type: [sellOfferSchema],
+        default: [],
     },
 });
 

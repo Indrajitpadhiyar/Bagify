@@ -3,16 +3,13 @@ import catchAsyncError from "../middlewares/catchAysncerror.middleware.js";
 
 // Get Banner Config (Public)
 export const getBannerConfig = catchAsyncError(async (req, res, next) => {
-    let config = await Config.findOne();
+    let config = await Config.findOne().populate("sellOffers.productId");
 
     if (!config) {
         config = await Config.create({});
+        config = await Config.findOne().populate("sellOffers.productId");
     }
 
-    if (!config.heroOffers || !config.heroOffers.length) {
-        config.heroOffers = createDefaultHeroOffers();
-        await config.save();
-    }
 
     res.status(200).json({
         success: true,

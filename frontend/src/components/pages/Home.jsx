@@ -3,21 +3,13 @@ import { Link } from 'react-router-dom';
 import { motion } from "framer-motion";
 import Navbar from '../ui/Navbar';
 import Footer from '../ui/Footer';
-import { Zap, Shield, Truck, Star, ChevronLeft, ChevronRight, ArrowRight, Clock } from 'lucide-react';
+import { Zap, Shield, Truck, Star, ChevronLeft, ChevronRight, ArrowRight, Clock, Flame } from 'lucide-react';
 import Products from '../layouts/Products';
 import MetaData from '../ui/MetaData';
 import API from '../../api/axiosClient';
 
-const heroFallbackSlide = {
-    title: 'Summer Sale is Live!',
-    subtitle: 'Save up to 60% on top brands. Limited time only!',
-    discountLabel: 'Up to 60% OFF',
-    ctaText: 'Shop Now',
-    ctaLink: '/products',
-    imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80',
-    startDate: null,
-    endDate: null,
-};
+// Fallback slide is no longer used as per user request
+const heroFallbackSlide = null;
 
 const isOfferCurrentlyActive = (offer) => {
     if (!offer) return false;
@@ -69,29 +61,45 @@ const Home = () => {
         { name: "Sarah K.", role: "Designer", text: "Best shopping experience ever! Fast shipping and amazing quality.", rating: 5 },
         { name: "Mike Chen", role: "Developer", text: "Love the deals and customer support. Will definitely shop again!", rating: 5 },
         { name: "Emma L.", role: "Student", text: "Got my earbuds in 2 days. Sound is incredible for the price!", rating: 5 },
-    ];
-
-    const [heroOffers, setHeroOffers] = useState([]);
+    ];    const [heroOffers, setHeroOffers] = useState([]);
+    const [sellOffers, setSellOffers] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
 
     useEffect(() => {
-        const fetchHeroConfig = async () => {
+        const fetchConfig = async () => {
             try {
                 const { data } = await API.get('/config/banner');
                 if (data.success) {
-                    const offers = Array.isArray(data.config?.heroOffers) ? data.config.heroOffers : [];
-                    setHeroOffers(offers);
+                    setHeroOffers(Array.isArray(data.config?.heroOffers) ? data.config.heroOffers : []);
+                    setSellOffers(Array.isArray(data.config?.sellOffers) ? data.config.sellOffers.filter(isOfferCurrentlyActive) : []);
                 }
             } catch (error) {
-                console.error("Failed to fetch hero configuration", error);
+                console.error("Failed to fetch configuration", error);
             }
         };
 
-        fetchHeroConfig();
+        fetchConfig();
     }, []);
 
-    const heroSlides = useMemo(() => heroOffers.filter(isOfferCurrentlyActive), [heroOffers]);
-    const carouselSlides = heroSlides.length ? heroSlides : [heroFallbackSlide];
+    const heroSlides = useMemo(() => {
+        const activeHero = heroOffers.filter(isOfferCurrentlyActive);
+        const activeSell = sellOffers.filter(isOfferCurrentlyActive).map(offer => ({
+            _id: offer._id,
+            title: offer.offerTitle || offer.productId?.name || 'Limited Offer',
+            subtitle: offer.description || offer.productId?.description || 'Special price for a limited time!',
+            discountLabel: offer.discount ? `${offer.discount}% OFF` : 'Special Offer',
+            ctaText: 'Buy Now',
+            ctaLink: `/product/${offer.productId?._id}`,
+            imageUrl: offer.productId?.images?.[0]?.url || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80',
+            startDate: offer.startDate,
+            endDate: offer.endDate
+        }));
+
+        // Prioritize sellOffers in the slider
+        return [...activeSell, ...activeHero];
+    }, [heroOffers, sellOffers]);
+
+    const carouselSlides = heroSlides;
 
     useEffect(() => {
         if (!carouselSlides.length) {
@@ -121,10 +129,19 @@ const Home = () => {
         setCurrentIndex((prev) => (prev + 1) % carouselSlides.length);
     };
 
-    const activeSlide = carouselSlides[currentIndex] || heroFallbackSlide;
+    const activeSlide = carouselSlides[currentIndex] || null;
     const rangeLabel = heroRangeLabel(activeSlide);
     const countdownLabel = daysLeftLabel(activeSlide);
-    const badgeLabel = activeSlide?.discountLabel || heroFallbackSlide.discountLabel;
+    const badgeLabel = activeSlide?.discountLabel || '';
+
+    if (!activeSlide && !heroSlides.length) return (
+        <>
+            <MetaData title="Bagify" />
+            <Navbar />
+            <Products />
+            <Footer />
+        </>
+    );
 
     return (
         <>

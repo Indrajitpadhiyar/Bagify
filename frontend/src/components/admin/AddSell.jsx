@@ -3,7 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import AdminLayout from './AdminLayout';
 import { getAdminProducts } from '../../redux/actions/product.Action';
 import toast from 'react-hot-toast';
-import { Sparkles, CalendarCheck } from 'lucide-react';
+import { Sparkles, CalendarCheck, Flame, Trash2 } from 'lucide-react';
+import API from '../../api/axiosClient';
 
 const initialSellForm = {
   offerTitle: '',
@@ -33,7 +34,19 @@ const AddSell = ({ hideLayout = false }) => {
 
   useEffect(() => {
     dispatch(getAdminProducts());
+    fetchSellOffers();
   }, [dispatch]);
+
+  const fetchSellOffers = async () => {
+    try {
+      const { data } = await API.get('/config/banner');
+      if (data.success && data.config?.sellOffers) {
+        setActiveOffers(data.config.sellOffers);
+      }
+    } catch (error) {
+      console.error('Failed to fetch sell offers', error);
+    }
+  };
 
   const stats = useMemo(() => {
     const totalProducts = products.length;
@@ -60,41 +73,48 @@ const AddSell = ({ hideLayout = false }) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.productId) {
       toast.error('Select a product to sell.');
       return;
     }
-    if (!formData.originalPrice) {
-      toast.error('Enter the original price.');
-      return;
-    }
     if (!formData.sellPrice) {
       toast.error('Enter the offer price.');
-      return;
-    }
-    if (Number(formData.sellPrice) >= Number(formData.originalPrice)) {
-      toast.error('Offer price must be lower than the original price.');
       return;
     }
 
     const selectedProduct = products.find((product) => product._id === formData.productId);
     const newOffer = {
-      id: `${Date.now()}-${formData.productId}`,
       ...formData,
       discount: computedDiscount,
       productName: selectedProduct?.name || '',
     };
 
-    setSubmitting(true);
-    setTimeout(() => {
+    try {
+      setSubmitting(true);
+      const updatedOffers = [newOffer, ...activeOffers];
+      
+      // Update config with new sell list
+      const { data } = await API.put('/admin/config/banner', {
+        sellOffers: updatedOffers.map(o => ({
+           ...o,
+           productId: o.productId?._id || o.productId // handle populated vs raw ID
+        }))
+      });
+
+      if (data.success) {
+        setActiveOffers(data.config.sellOffers);
+        setFormData({ ...initialSellForm });
+        toast.success('Sell offer published successfully.');
+      }
+    } catch (error) {
+      toast.error('Failed to publish sell offer.');
+      console.error(error);
+    } finally {
       setSubmitting(false);
-      setActiveOffers((prev) => [newOffer, ...prev]);
-      setFormData({ ...initialSellForm });
-      toast.success('Sell offer queued successfully.');
-    }, 900);
+    }
   };
 
   const handleCancel = () => {
@@ -102,9 +122,35 @@ const AddSell = ({ hideLayout = false }) => {
     toast('Sell preparation canceled.', { icon: '👋' });
   };
 
-  const removeOffer = (offerId) => {
-    setActiveOffers((prev) => prev.filter((offer) => offer.id !== offerId));
-    toast.success('Offer removed successfully.');
+  const removeOffer = async (index) => {
+    try {
+      setSubmitting(true);
+      // Fetch latest config to avoid overwriting other fields (like heroOffers)
+      const { data: currentData } = await API.get('/config/banner');
+      const currentConfig = currentData.config || {};
+      
+      const updatedSellOffers = activeOffers.filter((_, idx) => idx !== index);
+      
+      const payload = {
+        ...currentConfig,
+        sellOffers: updatedSellOffers.map(o => ({
+           ...o,
+           productId: o.productId?._id || o.productId
+        }))
+      };
+
+      const { data } = await API.put('/admin/config/banner', payload);
+
+      if (data.success) {
+        setActiveOffers(data.config.sellOffers);
+        toast.success('Offer removed successfully.');
+      }
+    } catch (error) {
+      toast.error('Failed to remove offer.');
+      console.error(error);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const content = (
@@ -249,10 +295,11 @@ const AddSell = ({ hideLayout = false }) => {
                 </button>
                 <button
                   type="button"
-                  onClick={handleCancel}
+                  onClick={() => document.getElementById('manage-offers')?.scrollIntoView({ behavior: 'smooth' })}
                   className="inline-flex items-center gap-2 rounded-2xl border border-orange-200 px-5 py-3 text-sm font-semibold text-orange-600 bg-white hover:bg-orange-50 transition"
                 >
-                  Cancel Sell
+                  <CalendarCheck size={18} />
+                  Manage Existing
                 </button>
               </div>
             </form>
@@ -260,94 +307,121 @@ const AddSell = ({ hideLayout = false }) => {
 
           <aside className="space-y-6 w-full">
             <div className="rounded-3xl border border-orange-100 bg-gradient-to-br from-orange-50 to-white/80 p-5 shadow-xl space-y-4">
-              <span className="text-xs uppercase tracking-[0.4em] text-orange-500">Product Peek</span>
-              <p className="text-xl font-semibold text-orange-900">{selectedProduct ? selectedProduct.name : 'Select a product to preview'}</p>
-              {selectedProduct && (
-                <div className="space-y-2 text-sm text-orange-600">
-                  <div className="flex items-center justify-between">
-                    <span>Stock</span>
-                    <strong>{selectedProduct.stock}</strong>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>MRP</span>
-                    <strong>â‚¹{selectedProduct.originalPrice || selectedProduct.price}</strong>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Category</span>
-                    <strong>{selectedProduct.category?.[0] || 'â€”'}</strong>
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="rounded-3xl border border-orange-100 bg-white/90 p-5 shadow-2xl space-y-4">
-              <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-orange-500">
-                <span>Active Sell Offers</span>
-                <CalendarCheck size={16} />
-              </div>
-              {activeOffers.length > 0 ? (
-                <div className="space-y-4">
-                  {activeOffers.map((offer) => (
-                    <div key={offer.id} className="rounded-2xl border border-orange-100/70 p-4 bg-orange-50/70">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold text-orange-700">{offer.offerTitle || offer.productName}</p>
-                          <p className="text-xs text-orange-500">Qty: {offer.quantity || 'N/A'}</p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeOffer(offer.id)}
-                          className="text-xs text-red-600 hover:text-red-700"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                      <div className="mt-3 grid gap-2 text-sm text-orange-600">
-                        <div className="flex items-center justify-between">
-                          <span>Original</span>
-                          <strong>â‚¹{offer.originalPrice || '0'}</strong>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span>Offer</span>
-                          <strong>â‚¹{offer.sellPrice || '0'}</strong>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span>Discount</span>
-                          <strong>{offer.discount}%</strong>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-orange-500">No active offers yet. Publish one to manage it here.</p>
-              )}
-            </div>
-            <div className="rounded-3xl border border-orange-100 bg-white/90 p-5 shadow-2xl space-y-4">
-              <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-orange-500">
-                <span>Store stats</span>
-                <CalendarCheck size={16} />
-              </div>
-              <div className="grid gap-3 text-sm font-semibold text-orange-700">
-                <div className="flex items-center justify-between border-b border-orange-100/50 pb-2">
-                  <span>Total products</span>
-                  <strong>{stats.totalProducts}</strong>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span>In stock</span>
-                  <strong>{stats.inStock}</strong>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span>Low stock</span>
-                  <strong>{stats.lowStock}</strong>
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-sm text-orange-500">
-                <span>Boosted by</span>
-                <span>Bagify Pro</span>
+              <span className="text-xs uppercase tracking-[0.4em] text-orange-500">Quick Tools</span>
+              <div className="space-y-2">
+                <button
+                  onClick={() => document.getElementById('manage-offers')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="w-full text-left p-3 rounded-xl bg-white border border-orange-100 hover:bg-orange-50 transition text-sm font-semibold text-orange-700 flex items-center justify-between"
+                >
+                  Manage/Delete Offers <CalendarCheck size={16} />
+                </button>
+                <button
+                  onClick={() => setFormData({ ...initialSellForm })}
+                  className="w-full text-left p-3 rounded-xl bg-orange-50/50 border border-orange-100 hover:bg-orange-50 transition text-sm font-semibold text-orange-600 flex items-center justify-between"
+                >
+                  Reset Form <Flame size={16} />
+                </button>
               </div>
             </div>
           </aside>
         </div>
+
+        {/* Unified Management Section */}
+        <section id="manage-offers" className="w-full space-y-6 pt-10">
+          <div className="rounded-3xl border border-orange-100 bg-white/95 p-6 shadow-2xl space-y-6">
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-orange-100 pb-4">
+              <div>
+                <h2 className="text-2xl font-bold text-orange-900 flex items-center gap-3">
+                  <Trash2 size={24} className="text-red-500" /> Remove Old/Active Offers
+                </h2>
+                <p className="text-sm text-orange-600 mt-1">Found an old offer? Clear it here to update the home page instantly.</p>
+              </div>
+              <div className="flex gap-2">
+                {activeOffers.some(o => o.endDate && new Date(o.endDate).getTime() < Date.now()) && (
+                  <button
+                    onClick={async () => {
+                      if (window.confirm('Delete all expired offers?')) {
+                        const fresh = activeOffers.filter(o => !o.endDate || new Date(o.endDate).getTime() >= Date.now());
+                        try {
+                          const { data } = await API.put('/admin/config/banner', {
+                            sellOffers: fresh.map(o => ({ ...o, productId: o.productId?._id || o.productId }))
+                          });
+                          if (data.success) {
+                            setActiveOffers(data.config.sellOffers);
+                            toast.success('Expired offers cleaned.');
+                          }
+                        } catch (err) { toast.error('Failed to clean.'); }
+                      }
+                    }}
+                    className="inline-flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-100 transition border border-red-100"
+                  >
+                    Clear All Expired
+                  </button>
+                )}
+              </div>
+            </header>
+
+            {activeOffers.length > 0 ? (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {activeOffers.map((offer, index) => {
+                  const isExpired = offer.endDate && new Date(offer.endDate).getTime() < Date.now();
+                  return (
+                    <div key={offer._id || index} className={`relative group rounded-2xl border transition-all duration-300 ${isExpired ? 'bg-gray-50 border-gray-200 grayscale-[0.5]' : 'bg-white border-orange-100 hover:shadow-xl hover:-translate-y-1'}`}>
+                      <div className="p-4 space-y-4">
+                        <div className="flex justify-between items-start">
+                          <div className="space-y-1">
+                            <h3 className="font-bold text-orange-900 leading-tight">
+                              {offer.offerTitle || offer.productName || offer.productId?.name}
+                            </h3>
+                            <div className="flex flex-wrap gap-2">
+                              <span className="text-[10px] font-black bg-orange-100 text-orange-600 px-2 py-0.5 rounded-md uppercase">
+                                {offer.discount}% OFF
+                              </span>
+                              {isExpired && (
+                                <span className="text-[10px] font-black bg-red-100 text-red-600 px-2 py-0.5 rounded-md uppercase">
+                                  Expired
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => removeOffer(index)}
+                            className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Remove this offer"
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                        </div>
+
+                        <div className="flex items-end justify-between">
+                          <div className="space-y-1">
+                            <p className="text-[10px] text-orange-500 font-bold uppercase tracking-wider">Pricing</p>
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-lg font-black text-orange-700">₹{offer.sellPrice}</span>
+                              <span className="text-xs text-gray-400 line-through">₹{offer.originalPrice}</span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                             <p className="text-[10px] text-gray-400 font-bold uppercase">Expires</p>
+                             <p className="text-xs font-semibold text-gray-600">{offer.endDate ? new Date(offer.endDate).toLocaleDateString() : 'Never'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="py-12 text-center space-y-3 bg-orange-50/20 rounded-3xl border border-dashed border-orange-100">
+                <div className="bg-white w-12 h-12 rounded-full flex items-center justify-center mx-auto shadow-sm">
+                   <Flame className="text-orange-200" />
+                </div>
+                <p className="text-orange-900 font-bold text-lg">Clean Slate!</p>
+                <p className="text-sm text-orange-500">No active or old offers are currently saved. Use the form above to add one.</p>
+              </div>
+            )}
+          </div>
+        </section>
       </div>
     </>
   );

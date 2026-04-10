@@ -176,7 +176,8 @@ const BannerConfig = () => {
         bannerSubtitle: '',
         bannerLink: '/products',
         isActive: true,
-        heroOffers: []
+        heroOffers: [],
+        sellOffers: []
     });
 
     useEffect(() => {
@@ -238,6 +239,10 @@ const BannerConfig = () => {
             startDate: offer.startDate || undefined,
             endDate: offer.endDate || undefined,
         })),
+        sellOffers: (config.sellOffers || []).map(o => ({
+            ...o,
+            productId: o.productId?._id || o.productId
+        }))
     });
 
     const handleSubmit = async (e) => {
