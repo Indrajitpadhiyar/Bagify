@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import fileUpload from "express-fileupload";
 import os from "os";
+import rezorpay from "razorpay";
 
 import product from "./src/routes/product.routes.js";
 import userRouter from "./src/routes/user.routes.js";
