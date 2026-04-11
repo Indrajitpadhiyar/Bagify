@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import {
-    Facebook,
-    Instagram,
-    Twitter,
-    Youtube,
     Mail,
     Phone,
     MapPin,
@@ -16,6 +12,7 @@ import {
     Headphones,
     ArrowUp,
 } from 'lucide-react';
+import { FaFacebook, FaInstagram, FaXTwitter, FaYoutube } from 'react-icons/fa6';
 
 const Footer = () => {
     const [openSection, setOpenSection] = useState(null);
@@ -48,10 +45,10 @@ const Footer = () => {
     };
 
     const socialLinks = [
-        { icon: Facebook, href: '#', label: 'Facebook' },
-        { icon: Instagram, href: '#', label: 'Instagram' },
-        { icon: Twitter, href: '#', label: 'Twitter' },
-        { icon: Youtube, href: '#', label: 'YouTube' },
+        { icon: FaFacebook, href: '#', label: 'Facebook' },
+        { icon: FaInstagram, href: '#', label: 'Instagram' },
+        { icon: FaXTwitter, href: '#', label: 'Twitter' },
+        { icon: FaYoutube, href: '#', label: 'YouTube' },
     ];
 
     const features = [
